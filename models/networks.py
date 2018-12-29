@@ -8,6 +8,7 @@ import torchvision.models as models
 # Re-usable blocks
 ############################################################################
 
+
 class TensorTransform(nn.Module):
     # Used to convert between default color space and VGG colorspace
     def __init__(self, res=256, mean=[.485, .456, .406], std=[.229, .224, .225]):
