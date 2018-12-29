@@ -57,7 +57,7 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 
 
 class UpRes(nn.Module):
-    # Upres block which uses pixel shuffle
+    # Upres block which uses pixel shuffle with res connection
     def __init__(self, ic, oc, cc=True, kernel_size=3, drop=.1):
         super(UpRes, self).__init__()
         self.oc = oc
@@ -79,7 +79,7 @@ class UpRes(nn.Module):
 
 
 class ConvTrans(nn.Module):
-    # One Block to be used as conv and transpose throughout the model, with interpolated res connection
+    # Transpose Convolution with res connection
     def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001):
         super(ConvTrans, self).__init__()
         self.oc = oc
@@ -110,7 +110,7 @@ class ConvTrans(nn.Module):
 
 
 ############################################################################
-# Generator and Discriminator
+# Generator and VGG
 ############################################################################
 
 
@@ -152,7 +152,7 @@ def make_vgg():
     vgg = models.vgg19(pretrained=True)
     children = list(vgg.children())
     children.pop()
-    vgg = nn.Sequential(*children[0][:25])
+    vgg = nn.Sequential(*children[0][:15])
     vgg.eval()
     for param in vgg.parameters():
         param.requires_grad = False

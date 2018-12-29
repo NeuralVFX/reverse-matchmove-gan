@@ -18,7 +18,7 @@ plt.switch_backend('agg')
 ############################################################################
 
 
-class ReverseTrack:
+class ReverseMatchmove:
     """
     Example usage if not using command line:
 

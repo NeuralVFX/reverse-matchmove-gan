@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from reverse_track import *
+from reverse_matchmove import *
 
 
 parser = argparse.ArgumentParser()
@@ -37,12 +37,12 @@ params = vars(parser.parse_args())
 
 # if load_state arg is not used, then train model from scratch
 if __name__ == '__main__':
-    sr = ReverseTrack(params)
+    sr = ReverseMatchmove(params)
     if params['load_state']:
         sr.load_state(params['load_state'])
     else:
         print('Starting From Scratch')
     sr.train()
 
-revtrack = ReverseTrack(params)
+revtrack = ReverseMatchmove(params)
 revtrack.train()
