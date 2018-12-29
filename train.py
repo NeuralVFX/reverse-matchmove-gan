@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+import argparse
+from reverse_track import *
+
+
+parser = argparse.ArgumentParser()
+
+
+parser.add_argument("cmd", help=argparse.SUPPRESS, nargs="*")
+parser.add_argument('--dataset', nargs='?', default='chiang_mai', type=str)
+parser.add_argument('--batch_size', nargs='?', default=5, type=int)
+parser.add_argument('--workers', nargs='?', default=8, type=int)
+parser.add_argument('--res', nargs='?', default=512, type=int)
+parser.add_argument('--lr_drop_every', nargs='?', default=5, type=int)
+parser.add_argument('--lr_drop_start', nargs='?', default=0, type=int)
+parser.add_argument('--vgg_layers_c', type=int, nargs='+', default=[2,7,12])
+parser.add_argument('--l1_weight', nargs='?', default=3., type=float)
+parser.add_argument('--content_weight', nargs='?', default=2.5, type=float)
+parser.add_argument('--vgg_weight_div', nargs='?', default=1, type=float)
+parser.add_argument('--lr', nargs='?', default=2e-4, type=float)
+parser.add_argument('--train_epoch', nargs='?', default=200, type=int)
+parser.add_argument('--weight_decay', nargs='?', default=.000001, type=float)
+parser.add_argument('--beta1', nargs='?', default=.5, type=float)
+parser.add_argument('--beta2', nargs='?', default=.999, type=float)
+parser.add_argument('--drop', nargs='?', default=.01, type=float)
+parser.add_argument('--center_drop', nargs='?', default=.01, type=float)
+parser.add_argument('--workers', nargs='?', default=8, type=int)
+parser.add_argument('--save_every', nargs='?', default=5, type=int)
+parser.add_argument('--save_img_every', nargs='?', default=1, type=int)
+parser.add_argument('--ids_test', type=int, nargs='+', default=[0,100])
+parser.add_argument('--ids_train', type=int, nargs='+', default=[0,2])
+parser.add_argument('--save_root', nargs='?', default='chiang_mai', type=str)
+parser.add_argument('--load_state', nargs='?', type=str)
+
+
+params = vars(parser.parse_args())
+
+# if load_state arg is not used, then train model from scratch
+if __name__ == '__main__':
+    sr = ReverseTrack(params)
+    if params['load_state']:
+        sr.load_state(params['load_state'])
+    else:
+        print('Starting From Scratch')
+    sr.train()
+
+revtrack = ReverseTrack(params)
+revtrack.train()
