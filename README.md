@@ -8,10 +8,8 @@ My dataset was created by photographing many random angles of a statue in Chiang
 *This repo is still being buit and tested, I will update the Usage when complete*
 
 # Example Data Set
-### Camera Matrices
-![](examples/chiang_mai_matrix_data.png)
-### Images
-![](examples/chiang_mai_data.png)
+![](examples/chiang_mai_matrix_data_a.png)
+
 
 # Example Augmentation
 ![](examples/augmentation_blk.png)
