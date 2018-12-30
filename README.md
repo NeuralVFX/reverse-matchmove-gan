@@ -17,5 +17,5 @@ My dataset was created by photographing many random angles of a statue in Chiang
 #### (1: Camera Matrix — 2: Generated Image — 3: Ground Truth Image)
 ![](examples/chiang_mai_example.png)
 
-# Video Example
+# Video Example (New Camera Path)
 ![](examples/anim_example.gif)
