@@ -59,7 +59,7 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 
 - Train Dir:
 
-`data/imagenet/`
+`data/chiang_mai/`
 
 ## Output Folder Structure
 
