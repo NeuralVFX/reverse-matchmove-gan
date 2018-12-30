@@ -286,7 +286,7 @@ class ReverseMatchmove:
                f" Weight Decay:{ self.opt_dict[opt].param_groups[0]['weight_decay']}")
          for opt in self.opt_dict.keys()]
 
-        # train loop
+        # Train loop
         for real, matrix in tqdm(self.train_loader):
             matrix = Variable(matrix).cuda()
             matrix = self.mtran(matrix)
