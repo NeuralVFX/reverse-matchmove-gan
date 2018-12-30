@@ -8,7 +8,6 @@ My dataset was created by photographing many random angles of a statue in Chiang
 *This repo is still being buit and tested, I will update the Usage when complete*
 
 # Example Data Set
-## Chiang Mai
 ### Camera Matrices
 ![](examples/chiang_mai_matrix_data.png)
 ### Images
@@ -21,5 +20,5 @@ My dataset was created by photographing many random angles of a statue in Chiang
 #### (1: Camera Matrix — 2: Generated Image — 3: Ground Truth Image)
 ![](examples/chiang_mai_example.png)
 
-# Video Examples
+# Video Example
 ![](examples/anim_example.gif)
