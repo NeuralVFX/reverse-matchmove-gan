@@ -275,7 +275,7 @@ class ReverseMatchmove:
         for loss in self.losses:
             self.loss_epoch_dict[loss] = []
 
-        # set learning rate
+        # Set learning rate
         lr_mult = self.lr_lookup()
         self.opt_dict["G"].param_groups[0]['weight_decay'] = self.params['weight_decay']
         self.opt_dict["G"].param_groups[0]['lr'] = lr_mult * self.params['lr']
