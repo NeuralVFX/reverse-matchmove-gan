@@ -48,8 +48,8 @@ class ReverseMatchmove:
               'lr_drop_every': 5,
               'save_root': 'vgg_up'}
 
-    revtrack = ReverseTrack(params)
-    revtrack.train()
+    rev = ReverseMatchmove(params)
+    rev.train()
 
     """
 
@@ -119,11 +119,6 @@ class ReverseMatchmove:
                                                params['beta2']),
                                         weight_decay=params['weight_decay'])
 
-        self.opt_dict["D"] = optim.Adam(self.model_dict["D"].parameters(),
-                                        lr=params['lr'],
-                                        betas=(params['beta1'],
-                                               params['beta2']),
-                                        weight_decay=params['weight_decay'])
         print('Losses Initialized')
 
         # Setup history storage
@@ -220,8 +215,6 @@ class ReverseMatchmove:
 
     def train_gen(self, matrix, real):
         self.set_grad("G", True)
-        self.set_grad("D", False)
-        # train function for generator
         self.opt_dict["G"].zero_grad()
 
         # generate fake
@@ -237,11 +230,9 @@ class ReverseMatchmove:
         total_loss.backward()
 
         self.opt_dict["G"].step()
-        self.opt_dict["G"].zero_grad()
         return fake.detach()
 
     def test_gen(self, matrix, real):
-
         # generate fake
         fake = self.model_dict["G"](matrix)
 
@@ -258,11 +249,11 @@ class ReverseMatchmove:
     def test_loop(self):
         # Test on validation set
         self.model_dict["G"].eval()
-        self.model_dict["D"].eval()
         self.set_grad("G", False)
-        self.set_grad("D", False)
+
         for loss in self.losses:
             self.loss_epoch_dict_test[loss] = []
+
         # test loop #
         for real, matrix in tqdm(self.test_loader):
             matrix = Variable(matrix).cuda()
@@ -279,9 +270,7 @@ class ReverseMatchmove:
     def train_loop(self):
         # Train on train set
         self.model_dict["G"].train()
-        self.model_dict["D"].train()
         self.set_grad("G", True)
-        self.set_grad("D", True)
 
         for loss in self.losses:
             self.loss_epoch_dict[loss] = []
@@ -290,13 +279,11 @@ class ReverseMatchmove:
         lr_mult = self.lr_lookup()
         self.opt_dict["G"].param_groups[0]['weight_decay'] = self.params['weight_decay']
         self.opt_dict["G"].param_groups[0]['lr'] = lr_mult * self.params['lr']
-        self.opt_dict["D"].param_groups[0]['weight_decay'] = self.params['weight_decay']
-        self.opt_dict["D"].param_groups[0]['lr'] = lr_mult * self.params['lr']
 
         # print LR and weight decay
         print(f"Sched Sched Iter:{self.current_iter}, Sched Epoch:{self.current_epoch}")
         [print(f"Learning Rate({opt}): {self.opt_dict[opt].param_groups[0]['lr']}",
-        f" Weight Decay:{ self.opt_dict[opt].param_groups[0]['weight_decay']}")
+               f" Weight Decay:{ self.opt_dict[opt].param_groups[0]['weight_decay']}")
          for opt in self.opt_dict.keys()]
 
         # train loop
@@ -353,4 +340,3 @@ class ReverseMatchmove:
 
         self.display_history()
         print('Hit End of Learning Schedule!')
-

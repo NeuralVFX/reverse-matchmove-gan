@@ -15,7 +15,8 @@ matplotlib.use('agg')
 
 
 def icnr(x, scale=2, init=nn.init.orthogonal_):
-    # initiate pre-pixel shuffle conv layers with ICNR
+    # initiate shuffle conv layers with ICNR
+
     new_shape = [int(x.shape[0]) // int(scale ** 2)] + list(x.shape[1:])
     single_kernel = torch.zeros(new_shape)
     single_kernel = init(single_kernel)
@@ -30,6 +31,7 @@ def icnr(x, scale=2, init=nn.init.orthogonal_):
 
 def weights_init_normal(m):
     # Set initial state of weights
+
     classname = m.__class__.__name__
     if 'ConvTrans' == classname:
         pass
@@ -37,7 +39,7 @@ def weights_init_normal(m):
         nn.init.normal(m.weight.data, 0, .02)
     elif 'Conv2d' in classname or 'ConvTrans' in classname:
         nn.init.orthogonal_(m.weight.data)
-        ## only use ICNR if icrn attr found
+        # only use ICNR if icrn attr found
         if classname == 'Conv2d' and hasattr(m, 'icnr'):
             kern = icnr(m.weight)
             m.weight.data.copy_(kern)
@@ -56,6 +58,7 @@ def mft(tensor):
 
 def show_test(params, denorm, mtran, train_data, test_data, model, save=False):
     # Show and save
+
     ids_a = params['ids_test']
     ids_b = params['ids_train']
     image_grid_len = len(ids_a + ids_b)
@@ -80,7 +83,6 @@ def show_test(params, denorm, mtran, train_data, test_data, model, save=False):
             mat = Variable(data[1]).cuda()
             mat = mtran(mat)
             test = model(mat)
-            r = denorm.denorm(test[0])
             ax[count, 0].cla()
             ax[count, 0].imshow(denorm.denorm(real[0]))
             ax[count, 1].cla()
@@ -111,6 +113,7 @@ def show_test(params, denorm, mtran, train_data, test_data, model, save=False):
 
 def plot_movie_mp4(image_array, filename):
     # take numpy image sequence and save as gif on disk
+
     dpi = 72.0
     xpixels, ypixels = image_array[0].shape[0], image_array[0].shape[1]
     fig = plt.figure(figsize=(ypixels / dpi, xpixels / dpi), dpi=dpi)
@@ -126,6 +129,7 @@ def plot_movie_mp4(image_array, filename):
 
 def test_repo(mdl, dataset, filename):
     # Use "REPO" dataset to render out sequence and save as a gif
+
     dataloader_test = torch.utils.data.DataLoader(dataset,
                                                   batch_size=1,
                                                   num_workers=mdl.params["workers"],

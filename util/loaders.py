@@ -72,8 +72,7 @@ class ResizeCV(object):
         return {'image': image}
 
 
-def aug_mat(start_mat, av, rot, zoom):
-    #### generate new world mat ####
+def augment_matrix(start_mat, av, rot, zoom):
     rot_mat = cv2.getRotationMatrix2D((1, 1), rot, 1)
     new_mat = np.array(np.eye(4))
     new_mat[:2, :2] = rot_mat[:, :2].T
@@ -82,7 +81,7 @@ def aug_mat(start_mat, av, rot, zoom):
     return new_mat, av
 
 
-def aug_im(start, rot, zoom):
+def augment_image(start, rot, zoom):
     r, c, z = start.shape
     rot_mat = cv2.getRotationMatrix2D((c / 2, r / 2), rot, zoom)
     aug_img = cv2.warpAffine(start, rot_mat, (c, r), flags=cv2.INTER_AREA)
@@ -91,7 +90,7 @@ def aug_im(start, rot, zoom):
 
 
 class TranImgMat(object):
-    # apply random transform to image a and b #
+    # Apply same random transform to both camera matrix and output image
 
     def __init__(self, rot=15, zoom=.2, zoom_offset=1.2, res=256):
         # store range of possible transformations
@@ -100,15 +99,14 @@ class TranImgMat(object):
         self.zoom_offset = zoom_offset
         self.resize = ResizeCV(res)
 
-    def get_random_transform(self, image, mat, focal_len, seed):
+    def get_random_transform(self, image, mat, focal_len):
         # create random transformation matrix
         rot = ((random.random() - .5) * 2) * self.rot
-
         zoom = (random.random() * self.zoom) + self.zoom_offset
 
-        image = aug_im(image, -rot, zoom)
+        image = augment_image(image, -rot, zoom)
         img_dict = self.resize({'image': image})
-        mat, focal_len = aug_mat(mat, focal_len, rot, zoom)
+        mat, focal_len = augment_matrix(mat, focal_len, rot, zoom)
 
         return img_dict['image'], mat, focal_len
 
@@ -118,7 +116,7 @@ class TranImgMat(object):
         matrix = sample['matrix']
         focal_len = sample['focal_len']
         seed = sample['seed']
-        image, mat, focal_len = self.get_random_transform(image_a, matrix, focal_len, seed)
+        image, mat, focal_len = self.get_random_transform(image_a, matrix, focal_len)
 
         return {'image': image, 'matrix': mat, 'focal_len': focal_len}
 
@@ -164,8 +162,9 @@ class ImageMatrixDataset:
         self.batch_size = 1
         self.repo = repo
 
-    def appy_augmentation(self, image, matrix, focal_len, seed):
+    def apply_augmentation(self, image, matrix, focal_len, seed):
         if self.train:
+            # only randomize while training
             data_dict = self.data_transforms({'image': image, 'matrix': matrix, 'focal_len': focal_len, 'seed': seed})
         else:
             data_dict = self.prev_data_transforms(
@@ -185,7 +184,7 @@ class ImageMatrixDataset:
         else:
             image = cv2_open(os.path.join(self.path, filename))
         seed = (int((index - self.offset_id) / self.batch_size) * self.epoch_seed)
-        image, matrix = self.appy_augmentation(image, matrix, focal_len, seed)
+        image, matrix = self.apply_augmentation(image, matrix, focal_len, seed)
 
         return torch.FloatTensor(image), torch.FloatTensor(matrix)
 

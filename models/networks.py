@@ -11,6 +11,7 @@ import torchvision.models as models
 
 class TensorTransform(nn.Module):
     # Used to convert between default color space and VGG colorspace
+
     def __init__(self, res=256, mean=[.485, .456, .406], std=[.229, .224, .225]):
         super(TensorTransform, self).__init__()
 
@@ -32,6 +33,7 @@ class TensorTransform(nn.Module):
 
 class MatrixTransform(nn.Module):
     # Used to scale input by mean and standard deviation
+
     def __init__(self, mean, std):
         super(MatrixTransform, self).__init__()
         self.mean = mean
@@ -57,10 +59,11 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     return nn.Sequential(*layers)
 
 
-class UpRes(nn.Module):
+class UpResBlock(nn.Module):
     # Upres block which uses pixel shuffle with res connection
-    def __init__(self, ic, oc, cc=True, kernel_size=3, drop=.1):
-        super(UpRes, self).__init__()
+
+    def __init__(self, ic, oc, kernel_size=3, drop=.1):
+        super(UpResBlock, self).__init__()
         self.oc = oc
         self.conv = conv_block(ic, oc * 4, kernel_size=kernel_size, drop=drop)
         self.ps = nn.PixelShuffle(2)
@@ -79,10 +82,11 @@ class UpRes(nn.Module):
         return x + (upres_x * .2)
 
 
-class ConvTrans(nn.Module):
+class TransposeBlock(nn.Module):
     # Transpose Convolution with res connection
+
     def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001):
-        super(ConvTrans, self).__init__()
+        super(TransposeBlock, self).__init__()
         self.oc = oc
         if padding is None:
             padding = int(kernel_size // 2 // stride)
@@ -126,15 +130,15 @@ class Generator(nn.Module):
         filt_count = min_filts
 
         for a in range(layers):
-            operations += [UpRes(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
+            operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
             filt_count = int(filt_count * 2)
             print(filt_count)
 
         operations += [
-            ConvTrans(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
-                      drop=center_drop),
+            TransposeBlock(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
+                           drop=center_drop),
 
-            ConvTrans(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop)
+            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop)
         ]
 
         operations.reverse()
@@ -181,6 +185,7 @@ class SetHook:
 
 class PerceptualLoss(nn.Module):
     # Store Hook, Calculate Content Loss
+
     def __init__(self, vgg, ct_wgt, l1_weight, content_layer_ids, weight_div=1):
         super().__init__()
         self.m, self.ct_wgt, self.l1_weight = vgg, ct_wgt, l1_weight
