@@ -112,7 +112,7 @@ def show_test(params, denorm, mtran, train_data, test_data, model, save=False):
 
 
 def plot_movie_mp4(image_array, filename):
-    # take numpy image sequence and save as gif on disk
+    # Take numpy image sequence and save as gif on disk
 
     dpi = 72.0
     xpixels, ypixels = image_array[0].shape[0], image_array[0].shape[1]
