@@ -10,7 +10,7 @@ My dataset was created by photographing many random angles of a statue in Chiang
 # Example Data Set
 ## Chiang Mai
 ### Camera Matrices
-![](examples/chinag_mai_matrix_data.png)
+![](examples/chiang_mai_matrix_data.png)
 ### Images
 ![](examples/chiang_mai_data.png)
 
