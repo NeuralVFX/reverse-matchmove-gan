@@ -263,7 +263,7 @@ class ReverseMatchmove:
             # TEST GENERATOR
             self.test_gen(matrix, real)
 
-            # append all losses in loss dict #
+            # Append all losses in loss dict #
             [self.loss_epoch_dict_test[loss].append(self.loss_batch_dict_test[loss].item()) for loss in self.losses]
         [self.train_hist_dict_test[loss].append(helper.mft(self.loss_epoch_dict_test[loss])) for loss in self.losses]
 
