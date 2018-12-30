@@ -11,7 +11,7 @@ My dataset was created by photographing many random angles of a statue in Chiang
 ![](examples/chiang_mai_matrix_data_a.png)
 
 # Example Augmentation
-![](examples/augmentation_blk.png)
+![](examples/augmentation_a.png)
 
 # Example Results
 #### (1: Camera Matrix — 2: Generated Image — 3: Ground Truth Image)
