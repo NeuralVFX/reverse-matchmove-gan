@@ -5,7 +5,7 @@ My dataset was created by photographing many random angles of a statue in Chiang
 
 # Code Usage
 
-*This repo is still being buit and tested, I will update the Usage when complete*
+*This repo is still being built and tested, I will update the Usage when complete*
 
 # Example Data Set
 ![](examples/chiang_mai_matrix_data_b.png)
