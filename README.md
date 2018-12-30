@@ -3,7 +3,7 @@ The goal of this project is to be able to reverse engineer new camera views from
 
 My dataset was created by photographing many random angles of a statue in Chiang Mai, and then using a photo-modeling tool to extract camera positions and create a Matrix-Image pair. I'll be posting this dataset online soon!
 
-# Generated Video Example (New Camera Path)
+# Generated Video Example
 ![](examples/anim_example.gif)
 
 # Code Usage
