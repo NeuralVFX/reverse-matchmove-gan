@@ -83,7 +83,7 @@ If you happen to have an image modeling program and Maya, you can use the script
   
 - `export_anim_cam_data(filename = <string>,frame_range = <int>)`
   
-  Export animation of single selected camera a CSV (Used for Repo dataset)
+  Export animation of single selected camera into a CSV (Used for Repo dataset)
 
 ## Output Folder Structure
 
