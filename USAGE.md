@@ -73,15 +73,15 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 
 If you happen to have an image modeling program and Maya, you can use the scripts provided in `util/maya_scripts.py` to create your own dataset.
 
-- export_multi_cam_data(filename=<string>)
+- `export_multi_cam_data(filename=<string>)`
   
   Export all selected cameras into a CSV (Used for test and train set)
 
-- new_cam_path_from_existing(frame_offset =<int>)
+- `new_cam_path_from_existing(frame_offset =<int>)`
   
   Create new camera path which animates through the posisitons of the selected cameras
   
-- export_anim_cam_data(filename = <string>,frame_range = <int>)
+- `export_anim_cam_data(filename = <string>,frame_range = <int>)`
   
   Export animation of single selected camera a CSV (Used for Repo dataset)
 
