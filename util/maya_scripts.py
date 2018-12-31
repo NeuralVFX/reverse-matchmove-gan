@@ -34,7 +34,7 @@ def export_multi_cam_data(filename='C:/ML/export/dataset_train.csv'):
     image_list = []
 
     for cam in cam_list:
-        # the photomodeler used appended "FBXASC046" to every image name
+        # the photo-modeler used appended "FBXASC046" to every image name
         # to create the camera name, might be different in other programs
         image = str(cam.name()).replace('FBXASC046', '.')
         mat, fl = get_cam(str(cam))
