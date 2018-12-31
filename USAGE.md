@@ -69,7 +69,7 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 
 `data/<data set>/dataset_repo.csv`
 
-## Make You're Own Dataset
+## Make Your Own Dataset
 
 If you happen to have an image modeling program and Maya, you can use the scripts provided in `util/maya_scripts.py` to create your own dataset.
 
