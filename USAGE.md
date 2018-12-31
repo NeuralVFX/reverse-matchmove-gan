@@ -57,9 +57,17 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 
 `data/<data set>/`
 
-- Train Dir:
+- Train CSV:
 
-`data/chiang_mai/`
+`data/<data set>/dataset_train.csv`
+
+- Test CSV:
+
+`data/<data set>/dataset_test.csv`
+
+- Repo CSV:
+
+`data/<data set>/dataset_repo.csv`
 
 ## Output Folder Structure
 
