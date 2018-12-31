@@ -91,7 +91,7 @@ class ReverseMatchmove:
         self.vgg_tran = n.TensorTransform(res=params["res"], mean=[.485, .456, .406], std=[.229, .224, .225])
         self.vgg_tran.cuda()
 
-        self.model_dict['G'] = n.Generator(drop=params['drop'], center_drop=params['center_drop'])
+        self.model_dict['G'] = n.Generator(layers = int(math.log(params["res"],2)-3),drop=params['drop'], center_drop=params['center_drop'])
 
         self.vgg = n.make_vgg()
         self.vgg.cuda()
