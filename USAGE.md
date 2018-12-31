@@ -55,7 +55,7 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 
 - Dataset:
 
-`data/<data set>/`
+`data/<data set>/<data set type>.csv`
 
 - Train CSV:
 
