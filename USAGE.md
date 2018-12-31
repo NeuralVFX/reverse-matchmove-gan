@@ -69,6 +69,16 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 
 `data/<data set>/dataset_repo.csv`
 
+## Output Folder Structure
+
+- `weights`, `test images`, `test animated gif` and `loss graph`, are all output to this directory: `output/<save_root>_*.*`
+
+- Test Image Example (output every loop through dataset): `output/chiang_mai_100.jpg`
+![](output/chiang_mai_100.jpg)
+
+- Test Animated Gif Example (output every time weights are saved): `output/chiang_mai_anim_100.gif`
+![](examples/anim_example.gif)
+
 ## Make Your Own Dataset
 
 If you happen to have an image modeling program and Maya, you can use the scripts provided in `util/maya_scripts.py` to create your own dataset.
@@ -84,15 +94,4 @@ If you happen to have an image modeling program and Maya, you can use the script
 - `export_anim_cam_data(filename = <string>,frame_range = <int>)`
   
   Export animation of single selected camera into a CSV (Used for Repo dataset)
-
-## Output Folder Structure
-
-- `weights`, `test images`, `test animated gif` and `loss graph`, are all output to this directory: `output/<save_root>_*.*`
-
-- Test Image Example (output every loop through dataset): `output/chiang_mai_100.jpg`
-![](output/chiang_mai_100.jpg)
-
-- Test Animated Gif Example (output every time weights are saved): `output/chiang_mai_anim_100.gif`
-![](examples/anim_example.gif)
-
 
