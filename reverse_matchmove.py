@@ -329,7 +329,7 @@ class ReverseMatchmove:
                                  self.train_data,
                                  self.test_data,
                                  self.model_dict['G'],
-                                 save=f'output/{params["save_root"]}_val_{self.current_epoch}.jpg')
+                                 save=f'output/{params["save_root"]}_{self.current_epoch}.jpg')
 
             # save
             if self.current_epoch % params["save_every"] == 0:
