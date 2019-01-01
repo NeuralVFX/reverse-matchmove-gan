@@ -80,11 +80,12 @@ python train.py --dataset chiang_mai --train_epoch 200  --save_root chiang_mai -
 ![](output/chiang_mai_100.jpg)
 
 - Test Animated Gif Example (output every time weights are saved): `output/chiang_mai_anim_100.gif`
+
 ![](examples/anim_example.gif)
 
 ## Make Your Own Dataset
 
-If you happen to have an image modeling program and Maya, you can use the scripts provided in `util/maya_scripts.py` to create your own dataset.
+If you happen to have an image modeling program and Maya, you can use the scripts provided in `util/maya_scripts.py` to create your own dataset. Here is a break down of the functions in that file:
 
 - `export_multi_cam_data(filename=<string>)`
   
