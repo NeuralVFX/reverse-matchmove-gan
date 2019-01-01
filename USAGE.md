@@ -33,8 +33,8 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 --dataset, default='chiang_mai', type=str                      # Dataset folder name
 --batch_size, default=5, type=int                              # Training batch size
 --workers, default=8, type=int                                 # How many threads to help with dataloading
---res, default=512, type=int                                   # Image resolution, for dataloading, and generator
---vgg_layers_c, default=[2,7,12], type=int                     # Layers of VGG to use for content
+--res, default=512, type=int                                   # Image resolution, for dataloading, and generator (must be a power of 2: 128, 256, 512, 1024)
+--vgg_layers_c, default=[2,7,12], type=int                     # Layers of VGG to use for perceptual loss
 --l1_weight, default=3., type=float                            # Multiplier for L1 loss
 --content_weight, default=2.5, type=float                      # Multiplier for perceptual loss
 --vgg_weight_div, default=1, type=float                        # Multiplier for each next layer in VGG perceptual loss
