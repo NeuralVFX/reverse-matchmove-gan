@@ -184,12 +184,12 @@ class SetHook:
 
 
 class PerceptualLoss(nn.Module):
-    # Store Hook, Calculate Content Loss
+    # Store Hook, Calculate Perceptual Loss
 
-    def __init__(self, vgg, ct_wgt, l1_weight, content_layer_ids, weight_div=1):
+    def __init__(self, vgg, ct_wgt, l1_weight, perceptual_layer_ids, weight_div=1):
         super().__init__()
         self.m, self.ct_wgt, self.l1_weight = vgg, ct_wgt, l1_weight
-        self.cfs = [SetHook(vgg[i]) for i in content_layer_ids]
+        self.cfs = [SetHook(vgg[i]) for i in perceptual_layer_ids]
 
         # make weight list, tapered by weight div
         weight = 1.0

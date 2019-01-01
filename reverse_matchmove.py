@@ -104,13 +104,10 @@ class ReverseMatchmove:
         print('Networks Initialized')
 
         # Setup loss
-        self.ct_loss = n.PerceptualLoss(self.vgg,
-                                        params['content_weight'],
-                                        params['l1_weight'],
-                                        params['vgg_layers_c'],
-                                        weight_div=params['vgg_weight_div'])
+        self.perceptual_loss = n.PerceptualLoss(self.vgg, params['perceptual_weight'], params['l1_weight'],
+                                                params['vgg_layers_p'], weight_div=params['vgg_weight_div'])
 
-        self.ct_loss.cuda()
+        self.perceptual_loss.cuda()
 
         # Setup optimizers
         self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
@@ -220,8 +217,8 @@ class ReverseMatchmove:
         # generate fake
         fake = self.model_dict["G"](matrix)
 
-        # get content loss
-        ct_losses, l1_losses = self.ct_loss(self.vgg_tran(fake), self.vgg_tran(real))
+        # get perceptual loss
+        ct_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
 
         self.loss_batch_dict['L1_Loss'] = sum(l1_losses)
         self.loss_batch_dict['C_Loss'] = sum(ct_losses)
@@ -236,8 +233,8 @@ class ReverseMatchmove:
         # generate fake
         fake = self.model_dict["G"](matrix)
 
-        # get content loss
-        ct_losses, l1_losses = self.ct_loss(self.vgg_tran(fake), self.vgg_tran(real))
+        # get perceptual loss
+        ct_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
 
         self.loss_batch_dict_test['L1_Loss'] = sum(l1_losses)
         self.loss_batch_dict_test['C_Loss'] = sum(ct_losses)
