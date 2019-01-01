@@ -1,4 +1,5 @@
 # Reverse-Matchmove-GAN
+
 The goal of this project is to be able to reverse engineer new camera views from existing footage. This is the same network from my blog post: http://neuralvfx.com/matchmove/reverse-matchmove-gan/
 
 My dataset was created by photographing many random angles of a statue in Chiang Mai. Using a photo-modeling tool I've extracted camera positions and created a CSV file of Matrix-Image pairs. 
@@ -8,7 +9,7 @@ The Chiang Mai dataset can be downloaded here: http://neuralvfx.com/datasets/rev
 # Generated Video Example
 ![](examples/anim_example.gif)
 
-# Code Usage
+# Code Usage( This repo is under construction, not ready to clone yet!)
 Usage instructions found here: [user manual page](USAGE.md).
 
 # Example Data Set
