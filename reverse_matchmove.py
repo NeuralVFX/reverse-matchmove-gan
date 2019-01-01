@@ -63,14 +63,21 @@ class ReverseMatchmove:
         # Setup data loaders
         self.transform = load.NormDenorm([.5, .5, .5], [.5, .5, .5])
 
-        self.train_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/dataset_train.csv', self.transform,
-                                                  output_res=params["res"], train=True)
+        self.train_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/dataset_train.csv',
+                                                  self.transform,
+                                                  output_res=params["res"],
+                                                  train=True)
 
-        self.test_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/dataset_test.csv', self.transform,
-                                                 output_res=params["res"], train=False)
+        self.test_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/dataset_test.csv',
+                                                 self.transform,
+                                                 output_res=params["res"],
+                                                 train=False)
 
-        self.repo_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/dataset_repo.csv', self.transform,
-                                                 output_res=params["res"], train=False, repo=True)
+        self.repo_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/dataset_repo.csv',
+                                                 self.transform,
+                                                 output_res=params["res"],
+                                                 train=False,
+                                                 repo=True)
 
         self.train_loader = torch.utils.data.DataLoader(self.train_data,
                                                         batch_size=params["batch_size"],
@@ -88,10 +95,14 @@ class ReverseMatchmove:
         print(f'Data Loaders Initialized,  Data Len:{self.train_data.__len__()}')
 
         # Setup models
-        self.vgg_tran = n.TensorTransform(res=params["res"], mean=[.485, .456, .406], std=[.229, .224, .225])
+        self.vgg_tran = n.TensorTransform(res=params["res"],
+                                          mean=[.485, .456, .406],
+                                          std=[.229, .224, .225])
         self.vgg_tran.cuda()
 
-        self.model_dict['G'] = n.Generator(layers = int(math.log(params["res"],2)-3),drop=params['drop'], center_drop=params['center_drop'])
+        self.model_dict['G'] = n.Generator(layers = int(math.log(params["res"],2)-3),
+                                           drop=params['drop'],
+                                           center_drop=params['center_drop'])
 
         self.vgg = n.make_vgg()
         self.vgg.cuda()
@@ -104,8 +115,11 @@ class ReverseMatchmove:
         print('Networks Initialized')
 
         # Setup loss
-        self.perceptual_loss = n.PerceptualLoss(self.vgg, params['perceptual_weight'], params['l1_weight'],
-                                                params['vgg_layers_p'], weight_div=params['vgg_weight_div'])
+        self.perceptual_loss = n.PerceptualLoss(self.vgg,
+                                                params['perceptual_weight'],
+                                                params['l1_weight'],
+                                                params['vgg_layers_p'],
+                                                weight_div=params['vgg_weight_div'])
 
         self.perceptual_loss.cuda()
 
@@ -197,7 +211,6 @@ class ReverseMatchmove:
         plt.xlabel('Iteration')
         plt.ylabel('Loss')
 
-        plt.legend(loc=2)
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(f'output/{self.params["save_root"]}_loss.jpg')
