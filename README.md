@@ -19,5 +19,4 @@ Usage instructions found here: [user manual page](USAGE.md).
 ![](examples/augmentation_a.png)
 
 # Example Results
-#### (1: Camera Matrix — 2: Generated Image — 3: Ground Truth Image)
 ![](examples/chiang_mai_example_a.png)
