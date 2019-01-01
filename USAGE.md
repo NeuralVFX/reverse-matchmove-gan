@@ -1,4 +1,7 @@
 
+# This repo is under construction! Not ready to clone quite yet!
+
+
 ## Getting Started
 - Check your python version, this is built on `python 3.6`
 - Install `pytorch 0.4.0` and dependencies from https://pytorch.org/
@@ -55,11 +58,19 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 
 - Dataset:
 
-`data/<data set>/`
+`data/<data set>/<data set type>.csv`
 
-- Train Dir:
+- Train CSV:
 
-`data/chiang_mai/`
+`data/<data set>/dataset_train.csv`
+
+- Test CSV:
+
+`data/<data set>/dataset_test.csv`
+
+- Repo CSV:
+
+`data/<data set>/dataset_repo.csv`
 
 ## Output Folder Structure
 
@@ -71,4 +82,19 @@ python train.py --dataset chian_mai --train_epoch 200  --save_root chiang_mai --
 - Test Animated Gif Example (output every time weights are saved): `output/chiang_mai_anim_100.gif`
 ![](examples/anim_example.gif)
 
+## Make Your Own Dataset
+
+If you happen to have an image modeling program and Maya, you can use the scripts provided in `util/maya_scripts.py` to create your own dataset.
+
+- `export_multi_cam_data(filename=<string>)`
+  
+  Export all selected cameras into a CSV (Used for test and train set)
+
+- `new_cam_path_from_existing(frame_offset =<int>)`
+  
+  Create new camera path which animates through the posisitons of the selected cameras
+  
+- `export_anim_cam_data(filename = <string>,frame_range = <int>)`
+  
+  Export animation of single selected camera into a CSV (Used for Repo dataset)
 
