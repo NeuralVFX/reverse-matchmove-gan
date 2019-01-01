@@ -76,7 +76,7 @@ python train.py --dataset chiang_mai --train_epoch 200  --save_root chiang_mai -
 
 - `weights`, `test images`, `test animated gif` and `loss graph`, are all output to this directory: `output/<save_root>_*.*`
 
-- Test Image Example (output every loop through dataset): `output/chiang_mai_100.jpg`
+- Test Image Example (output every loop through dataset, top two are validations set, bottom two are train set): `output/chiang_mai_100.jpg`
 ![](output/chiang_mai_100.jpg)
 
 - Test Animated Gif Example (output every time weights are saved): `output/chiang_mai_anim_100.gif`
