@@ -132,7 +132,6 @@ class Generator(nn.Module):
         for a in range(layers):
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
             filt_count = int(filt_count * 2)
-            print(filt_count)
 
         operations += [
             TransposeBlock(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
@@ -144,7 +143,7 @@ class Generator(nn.Module):
         operations.reverse()
 
         operations += [nn.ReflectionPad2d(3),
-                       nn.Conv2d(in_channels=min_filts + 2, out_channels=channels, kernel_size=7, padding=0, stride=1)]
+                       nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1)]
 
         self.model = nn.Sequential(*operations)
 
