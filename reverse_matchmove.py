@@ -200,7 +200,6 @@ class ReverseMatchmove:
     def display_history(self):
         # Draw history of losses, called at end of training
         fig = plt.figure()
-        plt.ylim(top=1.5)
         for key in self.losses:
             x = range(len(self.train_hist_dict[key]))
             x_test = range(len(self.train_hist_dict_test[key]))
@@ -210,7 +209,7 @@ class ReverseMatchmove:
 
         plt.xlabel('Iteration')
         plt.ylabel('Loss')
-
+        plt.legend(loc=2)
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(f'output/{self.params["save_root"]}_loss.jpg')
