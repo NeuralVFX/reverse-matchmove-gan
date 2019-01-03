@@ -33,17 +33,20 @@ def weights_init_normal(m):
     # Set initial state of weights
 
     classname = m.__class__.__name__
-    if 'ConvTrans' == classname:
-        pass
-    elif 'Linear' in classname:
-        nn.init.normal(m.weight.data, 0, .02)
-    elif 'Conv2d' in classname or 'ConvTrans' in classname:
-        nn.init.orthogonal_(m.weight.data)
-        # only use ICNR if icrn attr found
-        if classname == 'Conv2d' and hasattr(m, 'icnr'):
-            kern = icnr(m.weight)
-            m.weight.data.copy_(kern)
-            print(f'Init with ICNR:{classname}')
+    if hasattr(m, 'no_init'):
+        print (f'Skipping Init on Pre-trained:{classname}')
+    else:
+        if 'ConvTrans' == classname:
+            pass
+        elif 'Linear' in classname:
+            nn.init.normal(m.weight.data, 0, .02)
+        elif 'Conv2d' in classname or 'ConvTrans' in classname:
+            nn.init.orthogonal_(m.weight.data)
+            # only use ICNR if icrn attr found
+            if classname == 'Conv2d' and hasattr(m, 'icnr'):
+                kern = icnr(m.weight)
+                m.weight.data.copy_(kern)
+                print(f'Init with ICNR:{classname}')
 
 
 def mft(tensor):

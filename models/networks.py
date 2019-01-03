@@ -152,13 +152,16 @@ class Generator(nn.Module):
         return F.tanh(x)
 
 
-def make_vgg(depth = 15, use_grad=False, patch=False):
-    # VGG which can be used as patch discriminator aso
+def make_vgg(depth = 12, use_grad=False, patch=False):
+    # VGG which can be used as patch discriminator also
     vgg = models.vgg19(pretrained=True)
     children = list(vgg.children())
     children.pop()
 
     operations = children[0][:depth]
+
+    for op in operations:
+        op.no_init = True
 
     if patch:
         operations += [nn.Conv2d(in_channels=256, out_channels=1, padding=0, kernel_size=1, stride=1)]
@@ -212,16 +215,20 @@ class PerceptualLoss(nn.Module):
 
         self.weight_list = weight_list
 
-    def forward(self, input_img, target_img):
+    def forward(self, fake_img, real_img, disc_mode=False):
         # Calculate L1 and Perceptual Loss
-        self.m(target_img.data)
-        result_l1 = [F.l1_loss(input_img, target_img) * self.l1_weight]
+        self.m(real_img.data)
         targ_feats = [o.feats.data.clone() for o in self.cfs]
-        self.m(input_img)
+        fake_result = self.m(fake_img)
         inp_feats = [o.feats for o in self.cfs]
-        result_ct = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
+        result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
                      zip(inp_feats, targ_feats, self.weight_list)]
-        return result_ct, result_l1
+
+        if not disc_mode:
+            result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
+            return result_perc, result_l1
+        else:
+            return result_perc, fake_result
 
     def close(self):
         [o.remove() for o in self.sfs]

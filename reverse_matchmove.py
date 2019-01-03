@@ -104,6 +104,8 @@ class ReverseMatchmove:
                                            drop=params['drop'],
                                            center_drop=params['center_drop'])
 
+        self.model_dict['D'] = n.make_vgg(patch = True, use_grad=True)
+
         self.vgg = n.make_vgg()
         self.vgg.cuda()
 
@@ -123,6 +125,15 @@ class ReverseMatchmove:
 
         self.perceptual_loss.cuda()
 
+        self.disc_perceptual_loss = n.PerceptualLoss(self.model_dict['D'],
+                                                params['perceptual_weight'],
+                                                params['l1_weight'],
+                                                params['vgg_layers_p'],
+                                                weight_div=params['vgg_weight_div'])
+
+        self.disc_perceptual_loss.cuda()
+
+
         # Setup optimizers
         self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
                                         lr=params['lr'],
@@ -130,10 +141,15 @@ class ReverseMatchmove:
                                                params['beta2']),
                                         weight_decay=params['weight_decay'])
 
+        self.opt_dict["D"] = optim.Adam(self.model_dict["D"].parameters(),
+                                        lr=params['lr'],
+                                        betas=(params['beta1'],
+                                               params['beta2']),
+                                        weight_decay=params['weight_decay'])
         print('Losses Initialized')
 
         # Setup history storage
-        self.losses = ['L1_Loss', 'C_Loss']
+        self.losses = ['L1_Loss', 'P_Loss', 'D_Loss', 'DP_Loss', 'G_Loss']
         self.loss_batch_dict = {}
         self.loss_batch_dict_test = {}
         self.loss_epoch_dict = {}
@@ -224,21 +240,31 @@ class ReverseMatchmove:
 
     def train_gen(self, matrix, real):
         self.set_grad("G", True)
+        self.set_grad("D", False)
         self.opt_dict["G"].zero_grad()
 
         # generate fake
         fake = self.model_dict["G"](matrix)
 
         # get perceptual loss
-        ct_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
-
+        perc_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
         self.loss_batch_dict['L1_Loss'] = sum(l1_losses)
-        self.loss_batch_dict['C_Loss'] = sum(ct_losses)
+        self.loss_batch_dict['P_Loss'] = sum(perc_losses)
 
-        total_loss = self.loss_batch_dict['L1_Loss'] + self.loss_batch_dict['C_Loss']
+        # get discriminator loss
+        self.loss_batch_dict['G_Loss'], self.loss_batch_dict['DP_Loss'] = 0.0, 0.0
+        if self.train_disc:
+            disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real), disc_mode=True)
+            self.loss_batch_dict['G_Loss'] = (0.5 * torch.mean((disc_result_fake - 1) ** 2))
+            self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
+            total_loss = self.loss_batch_dict['L1_Loss'] + (self.loss_batch_dict['P_Loss'] *.5)+ (self.loss_batch_dict['DP_Loss']*.5)
+
+        else:
+            total_loss = self.loss_batch_dict['L1_Loss'] + self.loss_batch_dict['P_Loss']
+
         total_loss.backward()
-
         self.opt_dict["G"].step()
+
         return fake.detach()
 
     def test_gen(self, matrix, real):
@@ -246,10 +272,50 @@ class ReverseMatchmove:
         fake = self.model_dict["G"](matrix)
 
         # get perceptual loss
-        ct_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
+        perc_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
 
         self.loss_batch_dict_test['L1_Loss'] = sum(l1_losses)
-        self.loss_batch_dict_test['C_Loss'] = sum(ct_losses)
+        self.loss_batch_dict_test['P_Loss'] = sum(perc_losses)
+
+        # get discriminator loss
+        self.loss_batch_dict_test['G_Loss'], self.loss_batch_dict_test['DP_Loss'] = 0.0, 0.0
+        if self.train_disc:
+            disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real), disc_mode=True)
+            self.loss_batch_dict_test['G_Loss'] = (0.5 * torch.mean((disc_result_fake - 1) ** 2))
+            self.loss_batch_dict_test['DP_Loss'] = sum(disc_perc_losses)
+
+        return fake.detach()
+
+    def train_disc(self, real, fake):
+        if self.train_disc:
+            self.set_grad("G", False)
+            self.set_grad("D", True)
+            # train function for generator
+            self.opt_dict["D"].zero_grad()
+
+            # discriminate fake samples
+            d_result_fake = self.model_dict["D"](fake)
+            # discriminate real samples
+            d_result_real = self.model_dict["D"](real)
+
+            # add up disc a loss and step
+            self.loss_batch_dict['D_Loss'] = 0.5 * (torch.mean((d_result_real - 1) ** 2) + torch.mean(d_result_fake ** 2))
+            self.loss_batch_dict['D_Loss'].backward()
+            self.opt_dict["D"].step()
+        else:
+            self.loss_batch_dict['D_Loss'] = 0.
+
+    def test_disc(self, real, fake):
+        if self.train_disc:
+            # discriminate fake samples
+             d_result_fake = self.model_dict["D"](fake)
+            # discriminate real samples
+             d_result_real = self.model_dict["D"](real)
+
+            # add up disc a loss and step
+             self.loss_batch_dict_test['D_Loss'] = 0.5 * (torch.mean((d_result_real - 1)**2) + torch.mean(d_result_fake**2))
+        else:
+            self.loss_batch_dict_test['D_Loss'] = 0.
 
     def set_grad(self, model, grad):
         for param in self.model_dict[model].parameters():
@@ -270,7 +336,8 @@ class ReverseMatchmove:
             real = Variable(real).cuda()
 
             # TEST GENERATOR
-            self.test_gen(matrix, real)
+            fake = self.test_gen(matrix, real)
+            self.test_disc(real, fake)
 
             # Append all losses in loss dict #
             [self.loss_epoch_dict_test[loss].append(self.loss_batch_dict_test[loss].item()) for loss in self.losses]
@@ -303,6 +370,7 @@ class ReverseMatchmove:
 
             # TRAIN GENERATOR
             fake = self.train_gen(matrix, real)
+            self.train_disc(real, fake)
             # append all losses in loss dict
             [self.loss_epoch_dict[loss].append(self.loss_batch_dict[loss].item()) for loss in self.losses]
             self.current_iter += 1
@@ -314,6 +382,7 @@ class ReverseMatchmove:
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
 
+            self.train_disc = self.current_epoch > params['lr_drop_start']
             # TRAIN LOOP
             self.train_loop()
 
