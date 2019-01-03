@@ -9,7 +9,7 @@ The Chiang Mai dataset can be downloaded here: http://neuralvfx.com/datasets/rev
 # Generated Video Example
 ![](examples/anim_example.gif)
 
-# Code Usage( This repo is under construction, not ready to clone yet!)
+# Code Usage
 Usage instructions found here: [user manual page](USAGE.md).
 
 # Example Data Set
