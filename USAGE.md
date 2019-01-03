@@ -20,12 +20,12 @@ bash data/get_test_dataset.sh
 
 ## Train The Model
 ```bash
-python train.py --dataset chiang_mai --train_epoch 200  --save_root chiang_mai
+python train.py --dataset chiang_mai --train_epoch 200 --save_root chiang_mai
 ```
 
 ## Continue Training Existing Saved State
 ```bash
-python train.py --dataset chiang_mai --train_epoch 200  --save_root chiang_mai --load_state output/chiang_mai_3.json
+python train.py --dataset chiang_mai --train_epoch 200 --save_root chiang_mai --load_state output/chiang_mai_3.json
 ```
 
 ## Command Line Arguments
