@@ -125,9 +125,9 @@ class ReverseMatchmove:
 
         self.perceptual_loss.cuda()
 
-        disc_convs = [list(list(self.model_dict['G'].children())[0][2].children())[0][0],
-                                 list(list(self.model_dict['G'].children())[0][3].children())[0][0],
-                                 list(list(self.model_dict['G'].children())[0][4].children())[0][0]]
+        disc_convs = [list(list(self.model_dict['D'].children())[0][2].children())[0][0],
+                                 list(list(self.model_dict['D'].children())[0][3].children())[0][0],
+                                 list(list(self.model_dict['D'].children())[0][4].children())[0][0]]
 
         disc_hooks = [n.SetHook(i) for i in disc_convs]
 
