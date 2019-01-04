@@ -104,7 +104,7 @@ class ReverseMatchmove:
                                            drop=params['drop'],
                                            center_drop=params['center_drop'])
 
-        self.model_dict['D'] = n.make_vgg(patch = True, use_grad=True)
+        self.model_dict['D'] = n.UnshuffleDiscriminator()#n.make_vgg(patch = True, use_grad=True)
 
         self.vgg = n.make_vgg()
         self.vgg.cuda()
@@ -121,15 +121,22 @@ class ReverseMatchmove:
                                                 params['perceptual_weight'],
                                                 params['l1_weight'],
                                                 params['vgg_layers_p'],
-                                                weight_div=params['vgg_weight_div'])
+                                                params['vgg_layers_p_weight'])
 
         self.perceptual_loss.cuda()
+
+        disc_convs = [list(list(self.model_dict['G'].children())[0][2].children())[0][0],
+                                 list(list(self.model_dict['G'].children())[0][3].children())[0][0],
+                                 list(list(self.model_dict['G'].children())[0][4].children())[0][0]]
+
+        disc_hooks = [n.SetHook(i) for i in disc_convs]
 
         self.disc_perceptual_loss = n.PerceptualLoss(self.model_dict['D'],
                                                 params['perceptual_weight'],
                                                 params['l1_weight'],
                                                 params['vgg_layers_p'],
-                                                weight_div=params['vgg_weight_div'])
+                                                params['vgg_layers_p_weight'],
+                                                hooks = disc_hooks)
 
         self.disc_perceptual_loss.cuda()
 
@@ -145,7 +152,7 @@ class ReverseMatchmove:
                                         lr=params['lr'],
                                         betas=(params['beta1'],
                                                params['beta2']),
-                                        weight_decay=params['weight_decay'])
+                                        weight_decay=params['weight_decay']*10)
         print('Losses Initialized')
 
         # Setup history storage

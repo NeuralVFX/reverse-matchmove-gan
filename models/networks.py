@@ -114,6 +114,43 @@ class TransposeBlock(nn.Module):
         return x + (res_x * .2)
 
 
+class ReverseShuffle(nn.Module):
+    # Pixel Shuffle which replaces conv stride 2
+    def __init__(self):
+        super(ReverseShuffle, self).__init__()
+
+    def forward(self, fm):
+        r = 2
+        b, c, h, w = fm.shape
+        out_channel = c * (r ** 2)
+        out_h = h // r
+        out_w = w // r
+        fm_view = fm.contiguous().view(b, c, out_h, r, out_w, r)
+        fm_prime = fm_view.permute(0, 1, 3, 5, 2, 4).contiguous().view(b, out_channel, out_h, out_w)
+        return fm_prime
+
+
+class DownRes(nn.Module):
+    # Add Layer of Spatia Mapping
+    def __init__(self, ic, oc, kernel_size=3):
+        super(DownRes, self).__init__()
+        self.kernel_size = kernel_size
+        self.oc = oc
+        self.conv = conv_block(ic, oc // 4, kernel_size=kernel_size, icnr=False, drop=.1)
+        self.rev_shuff = ReverseShuffle()
+
+    def forward(self, x):
+        unsqueeze_x = x.unsqueeze(0)
+
+        x = self.conv(x)
+        x = self.rev_shuff(x)
+
+        upres_x = nn.functional.interpolate(unsqueeze_x, size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
+                                            align_corners=True)[0]
+        x = x + (upres_x * .2)
+        return x
+
+
 ############################################################################
 # Generator and VGG
 ############################################################################
@@ -150,6 +187,42 @@ class Generator(nn.Module):
     def forward(self, x):
         x = self.model(x)
         return F.tanh(x)
+
+
+class UnshuffleDiscriminator(nn.Module):
+    # Using reverse shuffling should reduce the repetitive shimmering patterns
+    def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3,
+                 drop=.1):
+        super(UnshuffleDiscriminator, self).__init__()
+        self.use_frac = use_frac
+        operations = []
+        if use_frac:
+            self.frac = frac
+
+        in_operations = [nn.ReflectionPad2d(3),
+                         nn.Conv2d(in_channels=channels, out_channels=filts_min, kernel_size=7, stride=1)]
+
+        filt_count = filts_min
+
+        for a in range(layers):
+            operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3,drop = drop)]
+            print(min(filt_count * 2, filts))
+            filt_count = int(filt_count * 2)
+
+        out_operations = [
+            nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=kernel_size,
+                      stride=1)]
+
+        operations = in_operations + operations + out_operations
+        self.operations = nn.Sequential(*operations)
+
+    def forward(self, x):
+        # Run operations, and return relu activations for loss function
+        if self.use_frac:
+            x = self.frac(x)
+
+        x = self.operations(x)
+        return x
 
 
 def make_vgg(depth = 13, use_grad=False, patch=False):
@@ -197,22 +270,18 @@ class SetHook:
 class PerceptualLoss(nn.Module):
     # Store Hook, Calculate Perceptual Loss
 
-    def __init__(self, vgg, ct_wgt, l1_weight, perceptual_layer_ids, weight_div=1):
+    def __init__(self, vgg, ct_wgt, l1_weight, perceptual_layer_ids, weight_list, hooks = None):
         super().__init__()
         self.m, self.ct_wgt, self.l1_weight = vgg, ct_wgt, l1_weight
-        self.cfs = [SetHook(vgg[i]) for i in perceptual_layer_ids]
 
-        # make weight list, tapered by weight div
-        weight = 1.0
-        weight_list = []
-        for i in range(len(self.cfs)):
-            weight_list.append(weight)
-            weight /= weight_div
+        if not hooks:
+            self.cfs = [SetHook(vgg[i]) for i in perceptual_layer_ids]
+        else:
+            print ('Using custom hooks')
+            self.cfs = hooks
 
         ratio = ct_wgt / sum(weight_list)
         weight_list = [a * ratio for a in weight_list]
-        weight_list.reverse()
-
         self.weight_list = weight_list
 
     def forward(self, fake_img, real_img, disc_mode=False):
