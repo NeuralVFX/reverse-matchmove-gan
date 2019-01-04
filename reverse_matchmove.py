@@ -332,7 +332,10 @@ class ReverseMatchmove:
     def test_loop(self):
         # Test on validation set
         self.model_dict["G"].eval()
+        self.model_dict["D"].eval()
+
         self.set_grad("G", False)
+        self.set_grad("D", False)
 
         for loss in self.losses:
             self.loss_epoch_dict_test[loss] = []
@@ -355,7 +358,9 @@ class ReverseMatchmove:
         # Train on train set
         self.model_dict["G"].train()
         self.set_grad("G", True)
-
+        self.model_dict["D"].train()
+        self.set_grad("D", True)
+        
         for loss in self.losses:
             self.loss_epoch_dict[loss] = []
 
