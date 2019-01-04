@@ -185,9 +185,11 @@ class ReverseMatchmove:
         self.current_epoch = state['epoch'] + 1
 
         for i in self.model_dict.keys():
-            self.model_dict[i].load_state_dict(state['models'][i])
+            if i in state['models'].keys():
+                self.model_dict[i].load_state_dict(state['models'][i])
         for i in self.opt_dict.keys():
-            self.opt_dict[i].load_state_dict(state['optimizers'][i])
+            if i in state['optimizers'].keys():
+                self.opt_dict[i].load_state_dict(state['optimizers'][i])
 
         self.train_hist_dict = state['train_hist']
         self.train_hist_dict_test = state['train_hist_test']
