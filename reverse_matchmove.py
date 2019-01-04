@@ -264,7 +264,8 @@ class ReverseMatchmove:
             self.loss_batch_dict['G_Loss'] = (0.5 * torch.mean((disc_result_fake - 1) ** 2))
             self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
             total_loss = self.loss_batch_dict['L1_Loss'] + (self.loss_batch_dict['P_Loss'] *.5)+ (self.loss_batch_dict['DP_Loss']*.5)
-
+            if self.params['disc_mult'] > 0.:
+                total_loss += (self.params['disc_mult'] * self.loss_batch_dict['G_Loss'] )
         else:
             total_loss = self.loss_batch_dict['L1_Loss'] + self.loss_batch_dict['P_Loss']
 
@@ -360,7 +361,7 @@ class ReverseMatchmove:
         self.set_grad("G", True)
         self.model_dict["D"].train()
         self.set_grad("D", True)
-        
+
         for loss in self.losses:
             self.loss_epoch_dict[loss] = []
 
