@@ -253,7 +253,7 @@ class ReverseMatchmove:
 
         # get discriminator loss
         self.loss_batch_dict['G_Loss'], self.loss_batch_dict['DP_Loss'] = 0.0, 0.0
-        if self.train_disc:
+        if self.train_perc_disc:
             disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake),
                                                                            self.vgg_tran(real),
                                                                            disc_mode=True)
@@ -281,7 +281,7 @@ class ReverseMatchmove:
 
         # get discriminator loss
         self.loss_batch_dict_test['G_Loss'], self.loss_batch_dict_test['DP_Loss'] = 0.0, 0.0
-        if self.train_disc:
+        if self.train_perc_disc:
             disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake),
                                                                            self.vgg_tran(real),
                                                                            disc_mode=True)
@@ -291,7 +291,7 @@ class ReverseMatchmove:
         return fake.detach()
 
     def train_disc(self, real, fake):
-        if self.train_disc:
+        if self.train_perc_disc:
             self.set_grad("G", False)
             self.set_grad("D", True)
             # train function for generator
@@ -310,7 +310,7 @@ class ReverseMatchmove:
             self.loss_batch_dict['D_Loss'] = 0.
 
     def test_disc(self, real, fake):
-        if self.train_disc:
+        if self.train_perc_disc:
             # discriminate fake samples
              d_result_fake = self.model_dict["D"](fake)
             # discriminate real samples
@@ -386,7 +386,7 @@ class ReverseMatchmove:
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
 
-            self.train_disc = self.current_epoch > params['lr_drop_start']
+            self.train_perc_disc = self.current_epoch > params['lr_drop_start']
             # TRAIN LOOP
             self.train_loop()
 
