@@ -178,7 +178,7 @@ class ReverseMatchmove:
         matrix_array = np.concatenate(matrix_all, axis=0)
         return matrix_array.mean(0), matrix_array.std(0)
 
-    def load_state(self, filepath, reset = False):
+    def load_state(self, filepath, reset=False):
         # Load previously saved sate from disk, including models, optimizers and history
         state = torch.load(filepath)
 
@@ -194,7 +194,7 @@ class ReverseMatchmove:
 
             self.train_hist_dict = state['train_hist']
             self.train_hist_dict_test = state['train_hist_test']
-            
+
         self.display_history()
 
     def save_state(self, filepath):

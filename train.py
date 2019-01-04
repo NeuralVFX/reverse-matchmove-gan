@@ -30,6 +30,7 @@ parser.add_argument('--ids_test', type=int, nargs='+', default=[0, 100])
 parser.add_argument('--ids_train', type=int, nargs='+', default=[0, 2])
 parser.add_argument('--save_root', nargs='?', default='chiang_mai', type=str)
 parser.add_argument('--load_state', nargs='?', type=str)
+parser.add_argument('--reset', nargs='?', default=0, type=int)
 
 
 params = vars(parser.parse_args())
@@ -38,7 +39,10 @@ params = vars(parser.parse_args())
 if __name__ == '__main__':
     sr = ReverseMatchmove(params)
     if params['load_state']:
-        sr.load_state(params['load_state'])
+        if params['reset'] == 1:
+            sr.load_state(params['load_state'],reset=True)
+        else:
+            sr.load_state(params['load_state'],reset=False)
     else:
         print('Starting From Scratch')
     sr.train()
