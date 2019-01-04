@@ -252,7 +252,7 @@ class ReverseMatchmove:
         self.loss_batch_dict['P_Loss'] = sum(perc_losses)
 
         # get discriminator loss
-        self.loss_batch_dict['G_Loss'], self.loss_batch_dict['DP_Loss'] = torch.zeros_like(sum(perc_losses)), torch.zeros_like(sum(perc_losses))
+        self.loss_batch_dict['G_Loss'], self.loss_batch_dict['DP_Loss'] = torch.zeros(1), torch.zeros(1)
         if self.train_perc_disc:
             disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake),
                                                                            self.vgg_tran(real),
@@ -280,7 +280,7 @@ class ReverseMatchmove:
         self.loss_batch_dict_test['P_Loss'] = sum(perc_losses)
 
         # get discriminator loss
-        self.loss_batch_dict_test['G_Loss'], self.loss_batch_dict_test['DP_Loss'] = 0.0, 0.0
+        self.loss_batch_dict_test['G_Loss'], self.loss_batch_dict_test['DP_Loss'] = torch.zeros(1), torch.zeros(1)
         if self.train_perc_disc:
             disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake),
                                                                            self.vgg_tran(real),
@@ -319,7 +319,7 @@ class ReverseMatchmove:
             # add up disc a loss and step
              self.loss_batch_dict_test['D_Loss'] = 0.5 * (torch.mean((d_result_real - 1)**2) + torch.mean(d_result_fake**2))
         else:
-            self.loss_batch_dict_test['D_Loss'] = 0.
+            self.loss_batch_dict_test['D_Loss'] = torch.zeros(1)
 
     def set_grad(self, model, grad):
         for param in self.model_dict[model].parameters():
