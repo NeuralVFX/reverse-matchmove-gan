@@ -152,19 +152,19 @@ class Generator(nn.Module):
         return F.tanh(x)
 
 
-def make_vgg(depth = 12, use_grad=False, patch=False):
+def make_vgg(depth = 13, use_grad=False, patch=False):
     # VGG which can be used as patch discriminator also
     vgg = models.vgg19(pretrained=True)
     children = list(vgg.children())
     children.pop()
-
     operations = children[0][:depth]
 
     for op in operations:
         op.no_init = True
 
     if patch:
-        operations += [nn.Conv2d(in_channels=256, out_channels=1, padding=0, kernel_size=1, stride=1)]
+        operations.add_module("conv_out",
+                              nn.Conv2d(in_channels=256, out_channels=1, padding=0, kernel_size=1, stride=1))
 
     vgg = nn.Sequential(*operations)
 
