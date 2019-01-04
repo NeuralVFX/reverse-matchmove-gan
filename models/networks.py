@@ -132,11 +132,11 @@ class ReverseShuffle(nn.Module):
 
 class DownRes(nn.Module):
     # Add Layer of Spatia Mapping
-    def __init__(self, ic, oc, kernel_size=3):
+    def __init__(self, ic, oc, kernel_size=3, drop = .1):
         super(DownRes, self).__init__()
         self.kernel_size = kernel_size
         self.oc = oc
-        self.conv = conv_block(ic, oc // 4, kernel_size=kernel_size, icnr=False, drop=.1)
+        self.conv = conv_block(ic, oc // 4, kernel_size=kernel_size, icnr=False, drop=drop)
         self.rev_shuff = ReverseShuffle()
 
     def forward(self, x):
