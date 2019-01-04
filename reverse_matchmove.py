@@ -307,7 +307,7 @@ class ReverseMatchmove:
             self.loss_batch_dict['D_Loss'].backward()
             self.opt_dict["D"].step()
         else:
-            self.loss_batch_dict['D_Loss'] = 0.
+            self.loss_batch_dict['D_Loss'] = torch.zeros(1)
 
     def test_disc(self, real, fake):
         if self.train_perc_disc:
