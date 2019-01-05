@@ -315,7 +315,6 @@ class ReverseMatchmove:
             d_result_real = self.model_dict["D"](real)
 
             # add up disc a loss and step
-            disc_loss =
 
             self.loss_batch_dict['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
             self.loss_batch_dict['D_Loss'].backward()
