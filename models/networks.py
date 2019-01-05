@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import torchvision.models as models
+from torch.nn.utils import spectral_norm
 
 
 ############################################################################
@@ -56,6 +57,16 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     bn = nn.BatchNorm2d(nf)
     drop = nn.Dropout(drop)
     layers += [conv, relu, bn, drop]
+    return nn.Sequential(*layers)
+
+
+def spectral_conv_block(ni, nf, kernel_size=3):
+    # conv_block with spectral normalization
+    layers = []
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2))
+    relu = nn.LeakyReLU(inplace=True)
+
+    layers += [conv, relu]
     return nn.Sequential(*layers)
 
 
@@ -132,11 +143,11 @@ class ReverseShuffle(nn.Module):
 
 class DownRes(nn.Module):
     # Add Layer of Spatia Mapping
-    def __init__(self, ic, oc, kernel_size=3, drop = .1):
+    def __init__(self, ic, oc, kernel_size=3):
         super(DownRes, self).__init__()
         self.kernel_size = kernel_size
         self.oc = oc
-        self.conv = conv_block(ic, oc // 4, kernel_size=kernel_size, icnr=False, drop=drop)
+        self.conv = spectral_conv_block(ic, oc // 4, kernel_size=kernel_size)
         self.rev_shuff = ReverseShuffle()
 
     def forward(self, x):
@@ -200,7 +211,7 @@ class UnshuffleDiscriminator(nn.Module):
             self.frac = frac
 
         in_operations = [nn.ReflectionPad2d(3),
-                         nn.Conv2d(in_channels=channels, out_channels=filts_min, kernel_size=7, stride=1)]
+                         spectral_norm(nn.Conv2d(in_channels=channels, out_channels=filts_min, kernel_size=7, stride=1))]
 
         filt_count = filts_min
 
@@ -210,8 +221,8 @@ class UnshuffleDiscriminator(nn.Module):
             filt_count = int(filt_count * 2)
 
         out_operations = [
-            nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=kernel_size,
-                      stride=1)]
+            spectral_norm(nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=kernel_size,
+                      stride=1))]
 
         operations = in_operations + operations + out_operations
         self.operations = nn.Sequential(*operations)
