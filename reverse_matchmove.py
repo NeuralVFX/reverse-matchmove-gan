@@ -152,7 +152,7 @@ class ReverseMatchmove:
                                         lr=params['lr'],
                                         betas=(params['beta1'],
                                                params['beta2']),
-                                        weight_decay=params['weight_decay']*10)
+                                        weight_decay=params['weight_decay'])
         print('Losses Initialized')
 
         # Setup history storage

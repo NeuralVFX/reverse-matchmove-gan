@@ -192,7 +192,7 @@ class Generator(nn.Module):
 class UnshuffleDiscriminator(nn.Module):
     # Using reverse shuffling should reduce the repetitive shimmering patterns
     def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3,
-                 drop=.1):
+                 drop=.01):
         super(UnshuffleDiscriminator, self).__init__()
         self.use_frac = use_frac
         operations = []
