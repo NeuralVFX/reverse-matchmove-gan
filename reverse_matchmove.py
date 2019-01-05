@@ -9,7 +9,7 @@ import numpy as np
 from util import helpers as helper
 from util import loaders as load
 from models import networks as n
-
+import torch.nn as nn
 plt.switch_backend('agg')
 
 
