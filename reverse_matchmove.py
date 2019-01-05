@@ -376,7 +376,8 @@ class ReverseMatchmove:
         lr_mult = self.lr_lookup()
         self.opt_dict["G"].param_groups[0]['weight_decay'] = self.params['weight_decay']
         self.opt_dict["G"].param_groups[0]['lr'] = lr_mult * self.params['lr']
-
+        self.opt_dict["D"].param_groups[0]['weight_decay'] = self.params['weight_decay']
+        self.opt_dict["D"].param_groups[0]['lr'] = lr_mult * self.params['lr']
         # print LR and weight decay
         print(f"Sched Sched Iter:{self.current_iter}, Sched Epoch:{self.current_epoch}")
         [print(f"Learning Rate({opt}): {self.opt_dict[opt].param_groups[0]['lr']}",
