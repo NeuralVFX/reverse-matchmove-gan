@@ -270,7 +270,7 @@ class ReverseMatchmove:
                                                                            disc_mode=True)
             self.loss_batch_dict['G_Loss'] = -disc_result_fake.mean()
             self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
-            total_loss = self.loss_batch_dict['L1_Loss'] + (self.loss_batch_dict['P_Loss'] *.5)+ (self.loss_batch_dict['DP_Loss']*self.params['DP_mult'])
+            total_loss = self.loss_batch_dict['L1_Loss'] + (self.loss_batch_dict['P_Loss'] *.5)+ (self.loss_batch_dict['DP_Loss']*self.params['dp_mult'])
             if self.params['disc_mult'] > 0.:
                 total_loss += (self.params['disc_mult'] * self.loss_batch_dict['G_Loss'] )
         else:
