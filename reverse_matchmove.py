@@ -152,7 +152,7 @@ class ReverseMatchmove:
                                         lr=params['lr'],
                                         betas=(params['beta1'],
                                                params['beta2']),
-                                        weight_decay=0)
+                                        weight_decay=0.0)
         print('Losses Initialized')
 
         # Setup history storage
@@ -268,7 +268,7 @@ class ReverseMatchmove:
             disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake),
                                                                            self.vgg_tran(real),
                                                                            disc_mode=True)
-            self.loss_batch_dict['G_Loss'] = (0.5 * torch.mean((disc_result_fake - 1) ** 2))
+            self.loss_batch_dict['G_Loss'] = disc_result_fake.mean()
             self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
             total_loss = self.loss_batch_dict['L1_Loss'] + (self.loss_batch_dict['P_Loss'] *.5)+ (self.loss_batch_dict['DP_Loss']*.5)
             if self.params['disc_mult'] > 0.:
@@ -297,7 +297,7 @@ class ReverseMatchmove:
             disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(self.vgg_tran(fake),
                                                                            self.vgg_tran(real),
                                                                            disc_mode=True)
-            self.loss_batch_dict_test['G_Loss'] = (0.5 * torch.mean((disc_result_fake - 1) ** 2))
+            self.loss_batch_dict_test['G_Loss'] = disc_result_fake.mean()
             self.loss_batch_dict_test['DP_Loss'] = sum(disc_perc_losses)
 
         return fake.detach()
@@ -315,7 +315,9 @@ class ReverseMatchmove:
             d_result_real = self.model_dict["D"](real)
 
             # add up disc a loss and step
-            self.loss_batch_dict['D_Loss'] = 0.5 * (torch.mean((d_result_real - 1) ** 2) + torch.mean(d_result_fake ** 2))
+            disc_loss =
+
+            self.loss_batch_dict['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
             self.loss_batch_dict['D_Loss'].backward()
             self.opt_dict["D"].step()
         else:
@@ -329,7 +331,7 @@ class ReverseMatchmove:
              d_result_real = self.model_dict["D"](real)
 
             # add up disc a loss and step
-             self.loss_batch_dict_test['D_Loss'] = 0.5 * (torch.mean((d_result_real - 1)**2) + torch.mean(d_result_fake**2))
+             self.loss_batch_dict_test['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
         else:
             self.loss_batch_dict_test['D_Loss'] = torch.zeros(1)
 
@@ -376,7 +378,7 @@ class ReverseMatchmove:
         lr_mult = self.lr_lookup()
         self.opt_dict["G"].param_groups[0]['weight_decay'] = self.params['weight_decay']
         self.opt_dict["G"].param_groups[0]['lr'] = lr_mult * self.params['lr']
-        self.opt_dict["D"].param_groups[0]['weight_decay'] = self.params['weight_decay']
+        self.opt_dict["D"].param_groups[0]['weight_decay'] = 0.0
         self.opt_dict["D"].param_groups[0]['lr'] = lr_mult * self.params['lr']
         # print LR and weight decay
         print(f"Sched Sched Iter:{self.current_iter}, Sched Epoch:{self.current_epoch}")
