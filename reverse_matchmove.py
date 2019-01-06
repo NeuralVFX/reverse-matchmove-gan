@@ -405,7 +405,7 @@ class ReverseMatchmove:
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
 
-            self.train_perc_disc = self.current_epoch > params['lr_drop_start']
+            self.train_perc_disc = self.current_epoch > params['disc_start']
             # TRAIN LOOP
             self.train_loop()
 
