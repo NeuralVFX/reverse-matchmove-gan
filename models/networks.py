@@ -242,8 +242,7 @@ def make_vgg(depth=9, patch=False):
     children = list(vgg.children())
     children.pop()
     # remove max pool
-    del children[0][4]
-    del children[0][8]
+    del children[0][9]
     operations = children[0][:depth]
 
 
