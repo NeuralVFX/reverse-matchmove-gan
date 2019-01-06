@@ -236,7 +236,7 @@ class UnshuffleDiscriminator(nn.Module):
         return x
 
 
-def make_vgg(depth=9, patch=False):
+def make_vgg(depth=10, patch=False):
     # VGG which can be used as patch discriminator also
     vgg = models.vgg19(pretrained=True)
     children = list(vgg.children())
