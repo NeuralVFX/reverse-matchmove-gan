@@ -236,13 +236,14 @@ class UnshuffleDiscriminator(nn.Module):
         return x
 
 
-def make_vgg(depth=10, patch=False):
+def make_vgg(depth=9, patch=False):
     # VGG which can be used as patch discriminator also
     vgg = models.vgg19(pretrained=True)
     children = list(vgg.children())
     children.pop()
     # remove max pool
-    del children[0][9]
+    del children[0][4]
+    del children[0][8]
     operations = children[0][:depth]
 
 

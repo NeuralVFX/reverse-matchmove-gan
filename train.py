@@ -13,8 +13,8 @@ parser.add_argument('--workers', nargs='?', default=8, type=int)
 parser.add_argument('--res', nargs='?', default=512, type=int)
 parser.add_argument('--lr_drop_every', nargs='?', default=50, type=int)
 parser.add_argument('--lr_drop_start', nargs='?', default=50, type=int)
-parser.add_argument('--vgg_layers_p', type=int, nargs='+', default=[2, 7, 9])
-parser.add_argument('--vgg_layers_p_weight', type=float, nargs='+', default=[1., 1., .3])
+parser.add_argument('--vgg_layers_p', type=int, nargs='+', default=[2, 6, 8])
+parser.add_argument('--vgg_layers_p_weight', type=int, nargs='+', default=[1., 1., .3])
 parser.add_argument('--l1_weight', nargs='?', default=3., type=float)
 parser.add_argument('--dp_mult', nargs='?', default=.5, type=float)
 parser.add_argument('--disc_mult', nargs='?', default=.5, type=float)
@@ -37,7 +37,7 @@ parser.add_argument('--reset', nargs='?', default=0, type=int)
 
 
 params = vars(parser.parse_args())
-
+print(params['vgg_layers_p_weight'])
 # if load_state arg is not used, then train model from scratch
 if __name__ == '__main__':
     sr = ReverseMatchmove(params)
