@@ -125,9 +125,10 @@ class ReverseMatchmove:
 
         self.perceptual_loss.cuda()
 
-        disc_convs = [list(list(self.model_dict['D'].children())[0][2].children())[0][0],
-                                 list(list(self.model_dict['D'].children())[0][3].children())[0][0],
-                                 list(list(self.model_dict['D'].children())[0][4].children())[0][0]]
+        disc_convs = [list(self.model_dict['D'].children())[0][1],
+                        list(list(self.model_dict['D'].children())[0][2].children())[0][0],
+                        list(list(self.model_dict['D'].children())[0][3].children())[0][0],
+                        list(list(self.model_dict['D'].children())[0][4].children())[0][0]]
 
         disc_hooks = [n.SetHook(i) for i in disc_convs]
 
@@ -135,7 +136,7 @@ class ReverseMatchmove:
                                                 params['perceptual_weight'],
                                                 params['l1_weight'],
                                                 params['vgg_layers_p'],
-                                                params['vgg_layers_p_weight'],
+                                                [1,1,1,1],
                                                 hooks = disc_hooks)
 
         self.disc_perceptual_loss.cuda()
