@@ -280,13 +280,23 @@ class SetHook:
     def close(self):
         self.hook_reg.remove()
 
+def gram_matrix(gram_input):
+    # Calcule Gram Matrix
+    b, c, h, w = gram_input.size()
+    x = gram_input.view(b, c, -1)
+    return torch.bmm(x, x.transpose(1, 2)) / (c * h * w)
+
+def gram_mse_loss(mse_input, target):
+    # Calculate MSE loss between two gram matrices
+    return F.mse_loss(gram_matrix(mse_input), gram_matrix(target))
+
 
 class PerceptualLoss(nn.Module):
     # Store Hook, Calculate Perceptual Loss
 
-    def __init__(self, vgg, ct_wgt, l1_weight, perceptual_layer_ids, weight_list, hooks = None):
+    def __init__(self, vgg, ct_wgt, l1_weight, perceptual_layer_ids, weight_list, style_weight, hooks = None):
         super().__init__()
-        self.m, self.ct_wgt, self.l1_weight = vgg, ct_wgt, l1_weight
+        self.m, self.ct_wgt, self.l1_weight, self.style_weight = vgg, ct_wgt, l1_weight, style_weight
 
         if not hooks:
             self.cfs = [SetHook(vgg[i]) for i in perceptual_layer_ids]
@@ -307,11 +317,13 @@ class PerceptualLoss(nn.Module):
         result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
                      zip(inp_feats, targ_feats, self.weight_list)]
 
+        result_style = [gram_mse_loss(inp, targ) * self.style_weight for inp, targ in zip(inp_feats, targ_feats)]
+
         if not disc_mode:
             result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
-            return result_perc, result_l1
+            return result_perc, result_style, result_l1
         else:
-            return result_perc, fake_result
+            return result_perc,result_style, fake_result
 
     def close(self):
         [o.remove() for o in self.sfs]

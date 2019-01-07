@@ -121,7 +121,8 @@ class ReverseMatchmove:
                                                 params['perceptual_weight'],
                                                 params['l1_weight'],
                                                 params['vgg_layers_p'],
-                                                params['vgg_layers_p_weight'])
+                                                params['vgg_layers_p_weight'],
+                                                params['style_weight'])
 
         self.perceptual_loss.cuda()
 
@@ -137,6 +138,7 @@ class ReverseMatchmove:
                                                 params['l1_weight'],
                                                 params['vgg_layers_p'],
                                                 [1,1,1,1],
+                                                params['style_weight'],
                                                 hooks = disc_hooks)
 
         self.disc_perceptual_loss.cuda()
@@ -259,23 +261,25 @@ class ReverseMatchmove:
         fake = self.model_dict["G"](matrix)
 
         # get perceptual loss
-        perc_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
+        perc_losses, style_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
         self.loss_batch_dict['L1_Loss'] = sum(l1_losses)
+        self.loss_batch_dict['S_Loss'] = sum(style_losses)
         self.loss_batch_dict['P_Loss'] = sum(perc_losses)
 
         # get discriminator loss
-        self.loss_batch_dict['G_Loss'], self.loss_batch_dict['DP_Loss'] = torch.zeros(1), torch.zeros(1)
+        self.loss_batch_dict['G_Loss'], self.loss_batch_dict['DP_Loss'], self.loss_batch_dict['DS_Loss'] = torch.zeros(1), torch.zeros(1),torch.zeros(1)
         if self.train_perc_disc:
-            disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(fake,
+            disc_perc_losses, disc_style_losses, disc_result_fake = self.disc_perceptual_loss(fake,
                                                                            real,
                                                                            disc_mode=True)
             self.loss_batch_dict['G_Loss'] = -disc_result_fake.mean()
+            self.loss_batch_dict['DS_Loss'] = sum(disc_style_losses)
             self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
-            total_loss = self.loss_batch_dict['L1_Loss'] + (self.loss_batch_dict['P_Loss'] *.5)+ (self.loss_batch_dict['DP_Loss']*self.params['dp_mult'])
+            total_loss = self.loss_batch_dict['L1_Loss'] + (self.loss_batch_dict['P_Loss'] *.5)+ (self.loss_batch_dict['S_Loss']*.5)+(self.loss_batch_dict['DP_Loss']*self.params['dp_mult']) + (self.loss_batch_dict['DS_Loss']*.5)
             if self.params['disc_mult'] > 0.:
                 total_loss += (self.params['disc_mult'] * self.loss_batch_dict['G_Loss'] )
         else:
-            total_loss = self.loss_batch_dict['L1_Loss'] + self.loss_batch_dict['P_Loss']
+            total_loss = self.loss_batch_dict['L1_Loss'] + self.loss_batch_dict['P_Loss'] + self.loss_batch_dict['S_Loss']
 
         total_loss.backward()
         self.opt_dict["G"].step()
@@ -287,18 +291,20 @@ class ReverseMatchmove:
         fake = self.model_dict["G"](matrix)
 
         # get perceptual loss
-        perc_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
+        perc_losses, style_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
 
         self.loss_batch_dict_test['L1_Loss'] = sum(l1_losses)
+        self.loss_batch_dict_test['S_Loss'] = sum(style_losses)
         self.loss_batch_dict_test['P_Loss'] = sum(perc_losses)
 
         # get discriminator loss
-        self.loss_batch_dict_test['G_Loss'], self.loss_batch_dict_test['DP_Loss'] = torch.zeros(1), torch.zeros(1)
+        self.loss_batch_dict_test['G_Loss'], self.loss_batch_dict_test['DP_Loss'], self.loss_batch_dict_test['DS_Loss'] = torch.zeros(1), torch.zeros(1), torch.zeros(1)
         if self.train_perc_disc:
-            disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(fake,
+            disc_perc_losses, disc_style_losses, disc_result_fake = self.disc_perceptual_loss(fake,
                                                                            real,
                                                                            disc_mode=True)
             self.loss_batch_dict_test['G_Loss'] = -disc_result_fake.mean()
+            self.loss_batch_dict_test['DS_Loss'] = sum(disc_style_losses)
             self.loss_batch_dict_test['DP_Loss'] = sum(disc_perc_losses)
 
         return fake.detach()
