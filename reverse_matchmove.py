@@ -159,7 +159,7 @@ class ReverseMatchmove:
         print('Losses Initialized')
 
         # Setup history storage
-        self.losses = ['L1_Loss', 'P_Loss', 'D_Loss', 'DP_Loss', 'G_Loss']
+        self.losses = ['L1_Loss', 'P_Loss', 'S_Loss', 'D_Loss', 'DS_Loss',  'DP_Loss', 'G_Loss']
         self.loss_batch_dict = {}
         self.loss_batch_dict_test = {}
         self.loss_epoch_dict = {}
