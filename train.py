@@ -18,7 +18,6 @@ parser.add_argument('--vgg_layers_p_weight', type=int, nargs='+', default=[1., 1
 parser.add_argument('--l1_weight', nargs='?', default=.1, type=float)
 parser.add_argument('--dp_mult', nargs='?', default=25, type=float)
 parser.add_argument('--disc_mult', nargs='?', default=.001, type=float)
-parser.add_argument('--disc_start', nargs='?', default=100, type=int)
 parser.add_argument('--vgg_weight_div', nargs='?', default=1, type=float)
 parser.add_argument('--perceptual_weight', nargs='?', default=2.5, type=float)
 parser.add_argument('--lr', nargs='?', default=2e-4, type=float)

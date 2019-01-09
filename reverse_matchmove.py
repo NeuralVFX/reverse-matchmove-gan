@@ -273,36 +273,31 @@ class ReverseMatchmove:
         return fake.detach()
 
     def train_disc(self, real, fake):
-        if self.train_perc_disc:
-            self.set_grad("G", False)
-            self.set_grad("D", True)
-            # train function for generator
-            self.opt_dict["D"].zero_grad()
+        self.set_grad("G", False)
+        self.set_grad("D", True)
+        # train function for generator
+        self.opt_dict["D"].zero_grad()
 
-            # discriminate fake samples
-            d_result_fake = self.model_dict["D"](fake)
-            # discriminate real samples
-            d_result_real = self.model_dict["D"](real)
+        # discriminate fake samples
+        d_result_fake = self.model_dict["D"](fake)
+        # discriminate real samples
+        d_result_real = self.model_dict["D"](real)
 
-            # add up disc a loss and step
+        # add up disc a loss and step
 
-            self.loss_batch_dict['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
-            self.loss_batch_dict['D_Loss'].backward()
-            self.opt_dict["D"].step()
-        else:
-            self.loss_batch_dict['D_Loss'] = torch.zeros(1)
+        self.loss_batch_dict['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
+        self.loss_batch_dict['D_Loss'].backward()
+        self.opt_dict["D"].step()
+
 
     def test_disc(self, real, fake):
-        if self.train_perc_disc:
-            # discriminate fake samples
-             d_result_fake = self.model_dict["D"](fake)
-            # discriminate real samples
-             d_result_real = self.model_dict["D"](real)
+        # discriminate fake samples
+         d_result_fake = self.model_dict["D"](fake)
+        # discriminate real samples
+         d_result_real = self.model_dict["D"](real)
 
-            # add up disc a loss and step
-             self.loss_batch_dict_test['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
-        else:
-            self.loss_batch_dict_test['D_Loss'] = torch.zeros(1)
+        # add up disc a loss and step
+         self.loss_batch_dict_test['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
 
     def set_grad(self, model, grad):
         for param in self.model_dict[model].parameters():
@@ -375,7 +370,6 @@ class ReverseMatchmove:
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
 
-            self.train_perc_disc = self.current_epoch > params['disc_start']
             # TRAIN LOOP
             self.train_loop()
 
