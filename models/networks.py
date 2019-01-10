@@ -82,10 +82,10 @@ class TransposeBlock(nn.Module):
             padding = int(kernel_size // 2 // stride)
 
         operations = []
-        operations += [nn.ConvTranspose2d(in_channels=ic, out_channels=oc, padding=padding, output_padding=0,
-                                         kernel_size=kernel_size, stride=stride, bias=False)]
+        operations += [spectral_norm(nn.ConvTranspose2d(in_channels=ic, out_channels=oc, padding=padding, output_padding=0,
+                                         kernel_size=kernel_size, stride=stride, bias=False))]
 
-        operations += [nn.LeakyReLU(inplace=True), nn.BatchNorm2d(oc), nn.Dropout(drop)]
+        operations += [nn.BatchNorm2d(oc), nn.LeakyReLU(inplace=True), nn.Dropout(drop)]
 
         self.operations = nn.Sequential(*operations)
 
