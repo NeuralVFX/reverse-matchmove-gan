@@ -260,9 +260,15 @@ class PerceptualLoss(nn.Module):
         result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
                      zip(inp_feats, targ_feats, self.weight_list)]
 
+        result_std = [ ((inp.std(0) - targ.std(0)).abs()).mean()  for inp, targ, layer_weight in
+                     zip(inp_feats, targ_feats, self.weight_list)]
+
+        result_mean = [ ((inp.mean(0) - targ.mean(0)).abs()).mean() for inp, targ, layer_weight in
+                     zip(inp_feats, targ_feats, self.weight_list)]
+
         result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
 
-        return result_perc, result_l1, fake_result
+        return result_perc, result_l1, result_std, result_mean, fake_result
 
     def close(self):
         [o.remove() for o in self.sfs]

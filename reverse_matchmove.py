@@ -134,14 +134,14 @@ class ReverseMatchmove:
                                         weight_decay=params['weight_decay'])
 
         self.opt_dict["D"] = optim.Adam(self.model_dict["D"].parameters(),
-                                        lr=params['lr']*4,
+                                        lr=params['lr'],
                                         betas=(params['beta1'],
                                                params['beta2']),
                                         weight_decay=0.0)
         print('Losses Initialized')
 
         # Setup history storage
-        self.losses = ['L1_Loss', 'D_Loss', 'DP_Loss', 'G_Loss']
+        self.losses = ['L1_Loss', 'D_Loss', 'DP_Loss', 'G_Loss', 'M_Loss', 'STD_Loss']
         self.loss_batch_dict = {}
         self.loss_batch_dict_test = {}
         self.loss_epoch_dict = {}
@@ -243,13 +243,15 @@ class ReverseMatchmove:
         fake = self.model_dict["G"](matrix)
 
         # get discriminator loss
-        disc_perc_losses, l1_losses, disc_result_fake = self.disc_perceptual_loss(fake,
+        disc_perc_losses, l1_losses, std_losses, mean_losses, disc_result_fake = self.disc_perceptual_loss(fake,
                                                                        real)
         self.loss_batch_dict['L1_Loss'] = sum(l1_losses)
         self.loss_batch_dict['G_Loss'] = -disc_result_fake.mean()
         self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
+        self.loss_batch_dict['M_Loss'] = sum(mean_losses)
+        self.loss_batch_dict['STD_Loss'] = sum(std_losses)
 
-        total_loss = self.loss_batch_dict['L1_Loss']+(self.loss_batch_dict['DP_Loss']*self.params['dp_mult'])
+        total_loss = self.loss_batch_dict['L1_Loss']+(self.loss_batch_dict['DP_Loss']*self.params['dp_mult']) + self.loss_batch_dict['M_Loss'] +self.loss_batch_dict['STD_Loss']
 
         if self.params['disc_mult'] > 0.:
             total_loss += (self.params['disc_mult'] * self.loss_batch_dict['G_Loss'] )
@@ -264,12 +266,13 @@ class ReverseMatchmove:
         fake = self.model_dict["G"](matrix)
 
         # get discriminator loss
-        disc_perc_losses, l1_losses, disc_result_fake = self.disc_perceptual_loss(fake,
+        disc_perc_losses, l1_losses, std_losses, mean_losses, disc_result_fake = self.disc_perceptual_loss(fake,
                                                                            real)
         self.loss_batch_dict_test['L1_Loss'] = sum(l1_losses)
         self.loss_batch_dict_test['G_Loss'] = -disc_result_fake.mean()
         self.loss_batch_dict_test['DP_Loss'] = sum(disc_perc_losses)
-
+        self.loss_batch_dict_test['M_Loss'] = sum(mean_losses)
+        self.loss_batch_dict_test['STD_Loss'] = sum(std_losses)
         return fake.detach()
 
     def train_disc(self, real, fake):
@@ -343,7 +346,7 @@ class ReverseMatchmove:
         self.opt_dict["G"].param_groups[0]['weight_decay'] = self.params['weight_decay']
         self.opt_dict["G"].param_groups[0]['lr'] = lr_mult * self.params['lr']
         self.opt_dict["D"].param_groups[0]['weight_decay'] = 0.0
-        self.opt_dict["D"].param_groups[0]['lr'] = lr_mult * self.params['lr']*4
+        self.opt_dict["D"].param_groups[0]['lr'] = lr_mult * self.params['lr']
         # print LR and weight decay
         print(f"Sched Sched Iter:{self.current_iter}, Sched Epoch:{self.current_epoch}")
         [print(f"Learning Rate({opt}): {self.opt_dict[opt].param_groups[0]['lr']}",
