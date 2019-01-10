@@ -176,7 +176,8 @@ class ReverseMatchmove:
 
         for i in self.model_dict.keys():
             if i in state['models'].keys():
-                self.model_dict[i].load_state_dict(state['models'][i], strict=False)
+                if i != 'D':
+                    self.model_dict[i].load_state_dict(state['models'][i])
         for i in self.opt_dict.keys():
             if i in state['optimizers'].keys():
                 if i != 'D':
