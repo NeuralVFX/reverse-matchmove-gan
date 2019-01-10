@@ -272,7 +272,7 @@ class PerceptualLoss(nn.Module):
         targ_feats = [o.feats.data.clone() for o in self.cfs]
         fake_result = self.m(fake_img)
         inp_feats = [o.feats for o in self.cfs]
-        result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
+        result_perc = [F.l1_loss(inp.contiguous().view(-1), targ.contiguous.view(-1)) * layer_weight for inp, targ, layer_weight in
                      zip(inp_feats, targ_feats, self.weight_list)]
 
         result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
