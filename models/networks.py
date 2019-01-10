@@ -26,7 +26,7 @@ class MatrixTransform(nn.Module):
 def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     # Conv block which stores ICNR attribute for initialization
     layers = []
-    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2))
+    conv = nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2)
     if icnr:
         conv.icnr = True
 
@@ -34,7 +34,7 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 
     bn = nn.BatchNorm2d(nf)
     drop = nn.Dropout(drop)
-    layers += [conv, bn, relu, drop]
+    layers += [conv, relu, bn, drop]
     return nn.Sequential(*layers)
 
 
@@ -42,7 +42,6 @@ def spectral_conv_block(ni, nf, kernel_size=3):
     # conv_block with spectral normalization
     layers = []
     conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2))
-
     relu = nn.LeakyReLU(inplace=True)
 
     layers += [conv, relu]
@@ -82,10 +81,10 @@ class TransposeBlock(nn.Module):
             padding = int(kernel_size // 2 // stride)
 
         operations = []
-        operations += [spectral_norm(nn.ConvTranspose2d(in_channels=ic, out_channels=oc, padding=padding, output_padding=0,
-                                         kernel_size=kernel_size, stride=stride, bias=False))]
+        operations += [nn.ConvTranspose2d(in_channels=ic, out_channels=oc, padding=padding, output_padding=0,
+                                         kernel_size=kernel_size, stride=stride, bias=False)]
 
-        operations += [nn.BatchNorm2d(oc), nn.LeakyReLU(inplace=True), nn.Dropout(drop)]
+        operations += [nn.LeakyReLU(inplace=True), nn.BatchNorm2d(oc), nn.Dropout(drop)]
 
         self.operations = nn.Sequential(*operations)
 
