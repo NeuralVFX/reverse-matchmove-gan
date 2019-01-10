@@ -37,14 +37,29 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     layers += [conv, relu, bn, drop]
     return nn.Sequential(*layers)
 
+class PadClip(nn.Module):
+    # Upres block which uses pixel shuffle with res connection
+
+    def __init__(self, padding = 1):
+        super(PadClip, self).__init__()
+        self.padding = padding
+        self.pad = nn.ZeroPad2d(padding)
+    def forward(self,x):
+        x = self.pad(x)
+        if self.padding % 2 == 0:
+            x = x[:,:,:-1,:-1]
+        return x
+
+
 
 def spectral_conv_block(ni, nf, kernel_size=3):
     # conv_block with spectral normalization
     layers = []
-    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2))
+    padding = PadClip(padding = kernel_size//2)
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size))
     relu = nn.LeakyReLU(inplace=True)
 
-    layers += [conv, relu]
+    layers += [padding, conv, relu]
     return nn.Sequential(*layers)
 
 
