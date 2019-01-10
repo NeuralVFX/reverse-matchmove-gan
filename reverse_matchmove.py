@@ -134,7 +134,7 @@ class ReverseMatchmove:
                                         weight_decay=params['weight_decay'])
 
         self.opt_dict["D"] = optim.Adam(self.model_dict["D"].parameters(),
-                                        lr=params['lr'],
+                                        lr=params['lr']*4,
                                         betas=(params['beta1'],
                                                params['beta2']),
                                         weight_decay=0.0)
@@ -343,7 +343,7 @@ class ReverseMatchmove:
         self.opt_dict["G"].param_groups[0]['weight_decay'] = self.params['weight_decay']
         self.opt_dict["G"].param_groups[0]['lr'] = lr_mult * self.params['lr']
         self.opt_dict["D"].param_groups[0]['weight_decay'] = 0.0
-        self.opt_dict["D"].param_groups[0]['lr'] = lr_mult * self.params['lr']
+        self.opt_dict["D"].param_groups[0]['lr'] = lr_mult * self.params['lr']*4
         # print LR and weight decay
         print(f"Sched Sched Iter:{self.current_iter}, Sched Epoch:{self.current_epoch}")
         [print(f"Learning Rate({opt}): {self.opt_dict[opt].param_groups[0]['lr']}",
