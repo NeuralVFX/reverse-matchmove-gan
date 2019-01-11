@@ -29,7 +29,6 @@ class Pad(nn.Module):
         super(Pad, self).__init__()
 
         self.kernel_size = kernel_size
-        self.pad = nn.ZeroPad2d(kernel_size // 2)
 
     def forward(self, x):
         x = F.pad(x, (self.kernel_size//2,self.kernel_size//2,self.kernel_size//2,self.kernel_size//2))
