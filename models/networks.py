@@ -55,11 +55,11 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 def spectral_conv_block(ni, nf, kernel_size=3):
     # conv_block with spectral normalization
     layers = []
-    pad = Pad( kernel_size = kernel_size)
-    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size))
+    #pad = Pad( kernel_size = kernel_size)
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size,padding=kernel_size//2))
     relu = nn.LeakyReLU(inplace=True)
 
-    layers += [pad, conv, relu]
+    layers += [conv, relu]
     return nn.Sequential(*layers)
 
 
@@ -211,7 +211,7 @@ class UnshuffleDiscriminator(nn.Module):
         filt_count = filts_min
 
         for a in range(layers):
-            operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
+            operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=5)]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
 
