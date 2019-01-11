@@ -32,9 +32,9 @@ class Pad(nn.Module):
         self.pad = nn.ZeroPad2d(kernel_size // 2)
 
     def forward(self, x):
-        x = self.pad(x)
-        if self.kernel_size % 2 == 0:
-            x = x[:, :, :-1, :-1]
+        x = F.pad(x, (self.kernel_size//2,self.kernel_size//2))
+        #if self.kernel_size % 2 == 0:
+        #    x = x[:, :, :-1, :-1]
         return x
 
 
@@ -56,7 +56,7 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 def spectral_conv_block(ni, nf, kernel_size=3):
     # conv_block with spectral normalization
     layers = []
-    pad = nn.ZeroPad2d(kernel_size // 2)
+    pad = Pad( kernel_size = kernel_size)
     conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size))
     relu = nn.LeakyReLU(inplace=True)
 
