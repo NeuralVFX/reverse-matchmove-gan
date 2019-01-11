@@ -32,7 +32,7 @@ class Pad(nn.Module):
         self.pad = nn.ZeroPad2d(kernel_size // 2)
 
     def forward(self, x):
-        x = F.pad(x, (self.kernel_size//2,self.kernel_size//2))
+        x = F.pad(x, (self.kernel_size//2,self.kernel_size//2,self.kernel_size//2,self.kernel_size//2))
         #if self.kernel_size % 2 == 0:
         #    x = x[:, :, :-1, :-1]
         return x
