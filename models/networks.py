@@ -56,11 +56,10 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 def spectral_conv_block(ni, nf, kernel_size=3):
     # conv_block with spectral normalization
     layers = []
-    pad = Pad(kernel_size = kernel_size)
-    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size))
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size,padding =1))
     relu = nn.LeakyReLU(inplace=True)
 
-    layers += [pad, conv, relu]
+    layers += [conv, relu]
     return nn.Sequential(*layers)
 
 
