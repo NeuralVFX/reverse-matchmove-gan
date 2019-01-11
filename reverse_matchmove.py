@@ -174,11 +174,11 @@ class ReverseMatchmove:
         # Load previously saved sate from disk, including models, optimizers and history
         state = torch.load(filepath)
 
-        for i in self.model_dict.keys():
-            if i in state['models'].keys():
+        for i in self.model_dict.keys() :
+            if i in state['models'].keys() and i != 'D':
                 self.model_dict[i].load_state_dict(state['models'][i])
         for i in self.opt_dict.keys():
-            if i in state['optimizers'].keys():
+            if i in state['optimizers'].keys() and i != 'D':
                 self.opt_dict[i].load_state_dict(state['optimizers'][i])
         if not reset:
             self.current_iter = state['iter'] + 1
