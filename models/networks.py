@@ -23,6 +23,21 @@ class MatrixTransform(nn.Module):
         return result
 
 
+class Pad(nn.Module):
+    # Add Layer of Spatia Mapping
+    def __init__(self, kernel_size=3):
+        super(Pad, self).__init__()
+
+        self.kernel_size = kernel_size
+        self.pad = nn.ZeroPad2d(kernel_size // 2)
+
+    def forward(self, x):
+        x = self.pad(x)
+        if self.kernel_size % 2 == 0:
+            x = x[:, :, :-1, :-1]
+        return x
+
+
 def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     # Conv block which stores ICNR attribute for initialization
     layers = []
@@ -37,29 +52,15 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     layers += [conv, relu, bn, drop]
     return nn.Sequential(*layers)
 
-class PadClip(nn.Module):
-    # Upres block which uses pixel shuffle with res connection
-
-    def __init__(self, padding = 1):
-        super(PadClip, self).__init__()
-        self.padding = padding
-        self.pad = nn.ZeroPad2d(padding)
-    def forward(self,x):
-        x = self.pad(x)
-        if self.padding % 2 == 0:
-            x = x[:,:,:-1,:-1]
-        return x
-
-
 
 def spectral_conv_block(ni, nf, kernel_size=3):
     # conv_block with spectral normalization
     layers = []
-    padding = PadClip(padding = kernel_size//2)
+    pad = Pad(kernel_size = kernel_size)
     conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size))
     relu = nn.LeakyReLU(inplace=True)
 
-    layers += [padding, conv, relu]
+    layers += [pad, conv, relu]
     return nn.Sequential(*layers)
 
 
@@ -134,6 +135,8 @@ class ReverseShuffle(nn.Module):
         return fm_prime
 
 
+
+
 class DownRes(nn.Module):
     # Add Layer of Spatia Mapping
     def __init__(self, ic, oc, kernel_size=3):
@@ -195,7 +198,7 @@ class Generator(nn.Module):
 
 class UnshuffleDiscriminator(nn.Module):
     # Using reverse shuffling should reduce the repetitive shimmering patterns
-    def __init__(self, channels=3, filts_min=64, filts=350, use_frac=False, kernel_size=4, frac=None, layers=3,
+    def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3,
                  drop=.01):
         super(UnshuffleDiscriminator, self).__init__()
         self.use_frac = use_frac
@@ -209,12 +212,12 @@ class UnshuffleDiscriminator(nn.Module):
         filt_count = filts_min
 
         for a in range(layers):
-            operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=4)]
+            operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
 
         out_operations = [
-            spectral_norm(nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=2,
+            spectral_norm(nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=kernel_size,
                       stride=1))]
 
         operations = in_operations + operations + out_operations
@@ -272,7 +275,7 @@ class PerceptualLoss(nn.Module):
         targ_feats = [o.feats.data.clone() for o in self.cfs]
         fake_result = self.m(fake_img)
         inp_feats = [o.feats for o in self.cfs]
-        result_perc = [F.l1_loss(inp.contiguous().view(-1), targ.contiguous().view(-1)) * layer_weight for inp, targ, layer_weight in
+        result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
                      zip(inp_feats, targ_feats, self.weight_list)]
 
         result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
