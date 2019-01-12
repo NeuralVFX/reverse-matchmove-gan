@@ -154,7 +154,7 @@ class ImageMatrixDataset:
         self.path = os.path.dirname(path_a)
         self.output_res = output_res
         self.data_transforms = TranImgMat(res=output_res, zoom=.2, zoom_offset=1.2)
-        self.prev_data_transforms = TranImgMat(res=output_res, rot=0, zoom=0, zoom_offset=1.1)
+        self.prev_data_transforms = TranImgMat(res=output_res, rot=0, zoom=0, zoom_offset=1)
         self.transform = transform
         self.train = train
         self.offset_id = 0
