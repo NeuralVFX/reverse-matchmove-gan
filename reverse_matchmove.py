@@ -174,7 +174,7 @@ class ReverseMatchmove:
         # Load previously saved sate from disk, including models, optimizers and history
         state = torch.load(filepath)
 
-        for i in self.model_dict.keys() :
+        for i in self.model_dict.keys():
                 self.model_dict[i].load_state_dict(state['models'][i])
         for i in self.opt_dict.keys():
                 self.opt_dict[i].load_state_dict(state['optimizers'][i])
@@ -381,7 +381,7 @@ class ReverseMatchmove:
         params = self.params
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
-
+            helper.test_repo(self, self.repo_data, f'output/{params["save_root"]}_{self.current_epoch}.gif')
             # TRAIN LOOP
             self.train_loop()
 
