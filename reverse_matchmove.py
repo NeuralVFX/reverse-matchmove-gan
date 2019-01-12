@@ -232,6 +232,14 @@ class ReverseMatchmove:
         lr_mult = 1 / math.pow(2, div)
         return lr_mult
 
+
+    def gen(self, matrix):
+        self.set_grad("G", False)
+        self.opt_dict["G"].zero_grad()
+        # generate fake
+        fake = self.model_dict["G"](matrix)
+        return fake.detach()
+
     def train_gen(self, matrix, real):
         self.set_grad("G", True)
         self.set_grad("D", False)
@@ -349,17 +357,25 @@ class ReverseMatchmove:
          for opt in self.opt_dict.keys()]
 
         # Train loop
-        for real, matrix in tqdm(self.train_loader):
-            matrix = Variable(matrix).cuda()
-            matrix = self.mtran(matrix)
-            real = Variable(real).cuda()
+        for sub_epoch in range(self.params['train_gen_every']):
+            print (f'Sub Epoch:{sub_epoch}')
+            for real, matrix in tqdm(self.train_loader):
+                matrix = Variable(matrix).cuda()
+                matrix = self.mtran(matrix)
+                real = Variable(real).cuda()
 
-            # TRAIN GENERATOR
-            fake = self.train_gen(matrix, real)
-            self.train_disc(real, fake)
-            # append all losses in loss dict
-            [self.loss_epoch_dict[loss].append(self.loss_batch_dict[loss].item()) for loss in self.losses]
-            self.current_iter += 1
+                # TRAIN GENERATOR, OR JUST GENERATE
+                if self.current_iter % self.params['train_gen_every'] == 0:
+                    print('train gen')
+                    fake = self.train_gen(matrix, real)
+                else:
+                    print('only generate')
+                    fake = self.gen(matrix)
+
+                self.train_disc(real, fake)
+                # append all losses in loss dict
+                [self.loss_epoch_dict[loss].append(self.loss_batch_dict[loss].item()) for loss in self.losses]
+                self.current_iter += 1
         [self.train_hist_dict[loss].append(helper.mft(self.loss_epoch_dict[loss])) for loss in self.losses]
 
     def train(self):
