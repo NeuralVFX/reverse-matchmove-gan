@@ -366,10 +366,8 @@ class ReverseMatchmove:
 
                 # TRAIN GENERATOR, OR JUST GENERATE
                 if self.current_iter % self.params['train_gen_every'] == 0:
-                    print('train gen')
                     fake = self.train_gen(matrix, real)
                 else:
-                    print('only generate')
                     fake = self.gen(matrix)
 
                 self.train_disc(real, fake)
