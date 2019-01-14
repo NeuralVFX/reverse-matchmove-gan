@@ -91,9 +91,9 @@ def show_test(params, denorm, mtran, train_data, test_data, model, save=False):
             ax[count, 1].cla()
             ax[count, 1].imshow(denorm.denorm(test[0]))
             count += 1
-        if count > len(ids_a)+1:
+        if idx > max(ids_a)+1:
             break
-    count = 0
+
     for idx, data in enumerate(dataloader_train):
         if idx in ids_b:
             real = Variable(data[0]).cuda()
@@ -106,7 +106,7 @@ def show_test(params, denorm, mtran, train_data, test_data, model, save=False):
             ax[count, 1].imshow(denorm.denorm(test[0]))
 
             count += 1
-        if count > len(ids_b)+1:
+        if idx > max(ids_b)+1:
             break
     model.train()
     if save:
