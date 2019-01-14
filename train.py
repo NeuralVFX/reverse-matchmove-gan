@@ -53,5 +53,3 @@ if __name__ == '__main__':
         print('Starting From Scratch')
     sr.train()
 
-revtrack = ReverseMatchmove(params)
-revtrack.train()
