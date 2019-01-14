@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 
 
 parser.add_argument("cmd", help=argparse.SUPPRESS, nargs="*")
-parser.add_argument('--dataset', nargs='?', default='chiang_mai', type=str)
+parser.add_argument('--dataset', nargs='?', default='chiang_mai_hi', type=str)
 parser.add_argument('--batch_size', nargs='?', default=5, type=int)
 parser.add_argument('--workers', nargs='?', default=8, type=int)
 parser.add_argument('--res', nargs='?', default=512, type=int)

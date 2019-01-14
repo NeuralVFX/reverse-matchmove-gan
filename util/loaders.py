@@ -68,7 +68,7 @@ class ResizeCV(object):
     def __call__(self, sample):
         image = sample['image']
         image = make_img_square(image)
-        image = cv2.resize(image, (self.output_size, self.output_size), interpolation=cv2.INTER_AREA)
+        image = cv2.resize(image, (self.output_size, self.output_size), interpolation=cv2.INTER_CUBIC)
         return {'image': image}
 
 
@@ -84,7 +84,7 @@ def augment_matrix(start_mat, av, rot, zoom):
 def augment_image(start, rot, zoom):
     r, c, z = start.shape
     rot_mat = cv2.getRotationMatrix2D((c / 2, r / 2), rot, zoom)
-    aug_img = cv2.warpAffine(start, rot_mat, (c, r), flags=cv2.INTER_AREA)
+    aug_img = cv2.warpAffine(start, rot_mat, (c, r), flags=cv2.INTER_CUBIC)
 
     return aug_img
 
@@ -154,7 +154,7 @@ class ImageMatrixDataset:
         self.path = os.path.dirname(path_a)
         self.output_res = output_res
         self.data_transforms = TranImgMat(res=output_res, zoom=.2, zoom_offset=1.2)
-        self.prev_data_transforms = TranImgMat(res=output_res, rot=0, zoom=0, zoom_offset=1)
+        self.prev_data_transforms = TranImgMat(res=output_res, rot=0, zoom=0, zoom_offset=1.3)
         self.transform = transform
         self.train = train
         self.offset_id = 0
