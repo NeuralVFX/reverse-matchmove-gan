@@ -94,11 +94,20 @@ class ReverseMatchmove:
         self.data_len = self.train_data.__len__()
         print(f'Data Loaders Initialized,  Data Len:{self.train_data.__len__()}')
 
+        # Setup models
+        self.vgg_tran = n.TensorTransform(res=params["res"],
+                                          mean=[.485, .456, .406],
+                                          std=[.229, .224, .225])
+        self.vgg_tran.cuda()
+
         self.model_dict['G'] = n.Generator(layers = int(math.log(params["res"],2)-3),
                                            drop=params['drop'],
                                            center_drop=params['center_drop'])
 
-        self.model_dict['D'] = n.UnshuffleDiscriminator()
+        self.model_dict['D'] = n.UnshuffleDiscriminator()#n.make_vgg(patch = True, use_grad=True)
+
+        self.vgg = n.make_vgg()
+        self.vgg.cuda()
 
         for i in self.model_dict.keys():
             self.model_dict[i].apply(helper.weights_init_normal)
@@ -108,6 +117,13 @@ class ReverseMatchmove:
         print('Networks Initialized')
 
         # Setup loss
+        self.perceptual_loss = n.PerceptualLoss(self.vgg,
+                                                params['perceptual_weight'],
+                                                params['l1_weight'],
+                                                params['vgg_layers_p'],
+                                                params['vgg_layers_p_weight'])
+
+        self.perceptual_loss.cuda()
 
         disc_convs = [list(self.model_dict['D'].children())[0][1],
                         list(list(self.model_dict['D'].children())[0][2].children())[0][0],
@@ -117,7 +133,7 @@ class ReverseMatchmove:
         disc_hooks = [n.SetHook(i) for i in disc_convs]
 
         self.disc_perceptual_loss = n.PerceptualLoss(self.model_dict['D'],
-                                                params['perceptual_weight'],
+                                                params['disc_perceptual_weight'],
                                                 params['l1_weight'],
                                                 params['vgg_layers_p'],
                                                 [1,1,1,1],
@@ -141,7 +157,7 @@ class ReverseMatchmove:
         print('Losses Initialized')
 
         # Setup history storage
-        self.losses = ['L1_Loss', 'D_Loss', 'DP_Loss', 'G_Loss']
+        self.losses = ['L1_Loss', 'P_Loss', 'D_Loss', 'DP_Loss', 'G_Loss']
         self.loss_batch_dict = {}
         self.loss_batch_dict_test = {}
         self.loss_epoch_dict = {}
@@ -175,8 +191,10 @@ class ReverseMatchmove:
         state = torch.load(filepath)
 
         for i in self.model_dict.keys():
+            if i in state['models'].keys():
                 self.model_dict[i].load_state_dict(state['models'][i])
         for i in self.opt_dict.keys():
+            if i in state['optimizers'].keys():
                 self.opt_dict[i].load_state_dict(state['optimizers'][i])
         if not reset:
             self.current_iter = state['iter'] + 1
@@ -248,10 +266,15 @@ class ReverseMatchmove:
         # generate fake
         fake = self.model_dict["G"](matrix)
 
-        # get discriminator loss
-        disc_perc_losses, l1_losses, disc_result_fake = self.disc_perceptual_loss(fake,
-                                                                       real)
+        # get perceptual loss
+        perc_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
         self.loss_batch_dict['L1_Loss'] = sum(l1_losses)
+        self.loss_batch_dict['P_Loss'] = sum(perc_losses)
+
+        # get discriminator loss
+        disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(fake,
+                                                                       real,
+                                                                       disc_mode=True)
         self.loss_batch_dict['G_Loss'] = -disc_result_fake.mean()
         self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
 
@@ -269,10 +292,17 @@ class ReverseMatchmove:
         # generate fake
         fake = self.model_dict["G"](matrix)
 
-        # get discriminator loss
-        disc_perc_losses, l1_losses, disc_result_fake = self.disc_perceptual_loss(fake,
-                                                                           real)
+        # get perceptual loss
+        perc_losses, l1_losses = self.perceptual_loss(self.vgg_tran(fake), self.vgg_tran(real))
+
         self.loss_batch_dict_test['L1_Loss'] = sum(l1_losses)
+        self.loss_batch_dict_test['P_Loss'] = sum(perc_losses)
+
+        # get discriminator loss
+
+        disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(fake,
+                                                                       real,
+                                                                       disc_mode=True)
         self.loss_batch_dict_test['G_Loss'] = -disc_result_fake.mean()
         self.loss_batch_dict_test['DP_Loss'] = sum(disc_perc_losses)
 
@@ -381,7 +411,7 @@ class ReverseMatchmove:
         params = self.params
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
-            helper.test_repo(self, self.repo_data, f'output/{params["save_root"]}_{self.current_epoch}.gif')
+
             # TRAIN LOOP
             self.train_loop()
 

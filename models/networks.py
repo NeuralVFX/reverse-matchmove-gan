@@ -10,6 +10,28 @@ from torch.nn.utils import spectral_norm
 ############################################################################
 
 
+class TensorTransform(nn.Module):
+    # Used to convert between default color space and VGG colorspace
+
+    def __init__(self, res=256, mean=[.485, .456, .406], std=[.229, .224, .225]):
+        super(TensorTransform, self).__init__()
+
+        self.mean = torch.zeros([3, res, res]).cuda()
+        self.mean[0, :, :] = mean[0]
+        self.mean[1, :, :] = mean[1]
+        self.mean[2, :, :] = mean[2]
+
+        self.std = torch.zeros([3, res, res]).cuda()
+        self.std[0, :, :] = std[0]
+        self.std[1, :, :] = std[1]
+        self.std[2, :, :] = std[2]
+
+    def forward(self, x):
+        norm_ready = (x * .5) + .5
+        result = (norm_ready - self.mean) / self.std
+        return result
+
+
 class MatrixTransform(nn.Module):
     # Used to scale input by mean and standard deviation
 
@@ -21,21 +43,6 @@ class MatrixTransform(nn.Module):
     def forward(self, x):
         result = (x - self.mean) / self.std
         return result
-
-
-class Pad(nn.Module):
-    # Add Layer of Spatia Mapping
-    def __init__(self, kernel_size=3):
-        super(Pad, self).__init__()
-
-        self.kernel_size = kernel_size
-
-    def forward(self, x):
-        x = F.pad(x, (self.kernel_size//2,self.kernel_size//2,self.kernel_size//2,self.kernel_size//2))
-        #if self.kernel_size % 2 == 0:
-        #    x = x[:, :, :-1, :-1]
-        return x
-
 
 def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     # Conv block which stores ICNR attribute for initialization
@@ -55,8 +62,7 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 def spectral_conv_block(ni, nf, kernel_size=3):
     # conv_block with spectral normalization
     layers = []
-    #pad = Pad( kernel_size = kernel_size)
-    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size,padding=kernel_size//2))
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2))
     relu = nn.LeakyReLU(inplace=True)
 
     layers += [conv, relu]
@@ -132,8 +138,6 @@ class ReverseShuffle(nn.Module):
         fm_view = fm.contiguous().view(b, c, out_h, r, out_w, r)
         fm_prime = fm_view.permute(0, 1, 3, 5, 2, 4).contiguous().view(b, out_channel, out_h, out_w)
         return fm_prime
-
-
 
 
 class DownRes(nn.Module):
@@ -231,6 +235,31 @@ class UnshuffleDiscriminator(nn.Module):
         return x
 
 
+def make_vgg(depth=9, patch=False):
+    # VGG which can be used as patch discriminator also
+    vgg = models.vgg19(pretrained=True)
+    children = list(vgg.children())
+    children.pop()
+    # remove max pool
+    del children[0][4]
+    del children[0][8]
+    operations = children[0][:depth]
+
+
+    for op in operations:
+        op.no_init = True
+
+    if patch:
+        operations.add_module("conv_out",
+                              nn.Conv2d(in_channels=256, out_channels=1, padding=0, kernel_size=1, stride=1))
+
+    vgg = nn.Sequential(*operations)
+
+    vgg.eval()
+    for param in vgg.parameters():
+        param.requires_grad = False
+    return vgg
+
 
 ############################################################################
 # Hook and Losses
@@ -268,7 +297,7 @@ class PerceptualLoss(nn.Module):
         weight_list = [a * ratio for a in weight_list]
         self.weight_list = weight_list
 
-    def forward(self, fake_img, real_img):
+    def forward(self, fake_img, real_img, disc_mode=False):
         # Calculate L1 and Perceptual Loss
         self.m(real_img.data)
         targ_feats = [o.feats.data.clone() for o in self.cfs]
@@ -277,9 +306,11 @@ class PerceptualLoss(nn.Module):
         result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
                      zip(inp_feats, targ_feats, self.weight_list)]
 
-        result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
-
-        return result_perc, result_l1, fake_result
+        if not disc_mode:
+            result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
+            return result_perc, result_l1
+        else:
+            return result_perc, fake_result
 
     def close(self):
         [o.remove() for o in self.sfs]
