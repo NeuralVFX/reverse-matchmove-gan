@@ -101,7 +101,10 @@ def show_test(params, denorm, mtran, train_data, test_data, model, save=False):
             ax[count, 0].imshow(denorm.denorm(real[0]))
             ax[count, 1].cla()
             ax[count, 1].imshow(denorm.denorm(test[0]))
+            if count > max(ids_b)+1:
+                break
             count += 1
+
     model.train()
     if save:
         plt.savefig(save)
