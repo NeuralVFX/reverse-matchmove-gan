@@ -302,7 +302,6 @@ class PerceptualLoss(nn.Module):
     def forward(self, fake_img, real_img, disc_mode=False):
         # Calculate L1 and Perceptual Loss
         if sum(self.weight_list) > 0.0:
-            print ('sum not zero')
             self.m(real_img.data)
             targ_feats = [o.feats.data.clone() for o in self.cfs]
             fake_result = self.m(fake_img)
@@ -310,7 +309,6 @@ class PerceptualLoss(nn.Module):
             result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
                      zip(inp_feats, targ_feats, self.weight_list)]
         else:
-            print ('sum zero')
             result_perc = [torch.zeros(1).cuda() for layer_weight in self.weight_list]
 
         if not disc_mode:
