@@ -310,6 +310,7 @@ class PerceptualLoss(nn.Module):
                      zip(inp_feats, targ_feats, self.weight_list)]
         else:
             result_perc = [torch.zeros(1).cuda() for layer_weight in self.weight_list]
+            fake_result = torch.zeros(1).cuda()
 
         if not disc_mode:
             result_l1 = [F.l1_loss(fake_img, real_img) * self.l1_weight]
