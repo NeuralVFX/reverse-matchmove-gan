@@ -60,11 +60,11 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     return nn.Sequential(*layers)
 
 
-def spectral_conv_block(ni, nf, kernel_size=3):
+def spectral_conv_block(ni, nf, kernel_size=3, stride=1):
     # conv_block with spectral normalization
     layers = []
     #pad = Pad( kernel_size = kernel_size)
-    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size,padding=kernel_size//2))
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size,padding=kernel_size//2,stride=stride))
     relu = nn.LeakyReLU(inplace=True)
 
     layers += [conv, relu]
@@ -162,6 +162,24 @@ class DownRes(nn.Module):
         x = x + (upres_x * .2)
         return x
 
+class DebbyDownRes(nn.Module):
+    # Add Layer of Spatia Mapping
+    def __init__(self, ic, oc, kernel_size=3):
+        super(DownRes, self).__init__()
+        self.kernel_size = kernel_size
+        self.oc = oc
+        self.conv = spectral_conv_block(ic, oc, kernel_size=kernel_size, stride=2)
+
+    def forward(self, x):
+        unsqueeze_x = x.unsqueeze(0)
+
+        x = self.conv(x)
+
+        upres_x = nn.functional.interpolate(unsqueeze_x, size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
+                                            align_corners=True)[0]
+        x = x + (upres_x * .2)
+        return x
+
 
 ############################################################################
 # Generator and VGG
@@ -217,7 +235,7 @@ class UnshuffleDiscriminator(nn.Module):
         filt_count = filts_min
 
         for a in range(layers):
-            operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
+            operations += [DebbyDownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
 
