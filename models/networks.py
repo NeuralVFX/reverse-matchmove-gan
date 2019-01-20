@@ -165,7 +165,7 @@ class DownRes(nn.Module):
 class DebbyDownRes(nn.Module):
     # Add Layer of Spatia Mapping
     def __init__(self, ic, oc, kernel_size=3):
-        super(DownRes, self).__init__()
+        super(DebbyDownRes, self).__init__()
         self.kernel_size = kernel_size
         self.oc = oc
         self.conv = spectral_conv_block(ic, oc, kernel_size=kernel_size, stride=2)
