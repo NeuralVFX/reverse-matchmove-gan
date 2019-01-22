@@ -2,9 +2,15 @@
 import argparse
 from reverse_matchmove import *
 
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 parser = argparse.ArgumentParser()
-
 
 parser.add_argument("cmd", help=argparse.SUPPRESS, nargs="*")
 parser.add_argument('--dataset', nargs='?', default='chiang_mai_hi', type=str)
@@ -36,7 +42,8 @@ parser.add_argument('--ids_test', type=int, nargs='+', default=[0, 100])
 parser.add_argument('--ids_train', type=int, nargs='+', default=[0, 2])
 parser.add_argument('--save_root', nargs='?', default='chiang_mai', type=str)
 parser.add_argument('--load_state', nargs='?', type=str)
-parser.add_argument('--reset', nargs='?', default=0, type=int)
+parser.add_argument('--reset', nargs='?', default=False, type=bool)
+parser.add_argument('--just_make_gif', nargs='?', default=False, type=bool)
 
 
 params = vars(parser.parse_args())
@@ -45,11 +52,14 @@ print(params['vgg_layers_p_weight'])
 if __name__ == '__main__':
     sr = ReverseMatchmove(params)
     if params['load_state']:
-        if params['reset'] == 1:
+        if params['reset']:
             sr.load_state(params['load_state'],reset=True)
         else:
             sr.load_state(params['load_state'],reset=False)
     else:
         print('Starting From Scratch')
-    sr.train()
+    if params['just_make_gif']:
+        sr.test_repo()
+    else:
+        sr.train()
 

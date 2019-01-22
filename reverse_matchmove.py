@@ -447,3 +447,6 @@ class ReverseMatchmove:
 
         self.display_history()
         print('Hit End of Learning Schedule!')
+
+    def test_repo(self):
+        helper.test_repo(self, self.repo_data, f'output/{params["save_root"]}_{self.current_epoch}.gif')
