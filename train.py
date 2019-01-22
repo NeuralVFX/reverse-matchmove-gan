@@ -41,6 +41,8 @@ parser.add_argument('--save_img_every', nargs='?', default=1, type=int)
 parser.add_argument('--ids_test', type=int, nargs='+', default=[0, 100])
 parser.add_argument('--ids_train', type=int, nargs='+', default=[0, 2])
 parser.add_argument('--save_root', nargs='?', default='chiang_mai', type=str)
+parser.add_argument('--repo_name', nargs='?', default='dataset_repo.csv', type=str)
+
 parser.add_argument('--load_state', nargs='?', type=str)
 parser.add_argument('--reset', nargs='?', default=False, type=bool)
 parser.add_argument('--just_make_gif', nargs='?', default=False, type=bool)
