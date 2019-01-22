@@ -235,7 +235,7 @@ class UnshuffleDiscriminator(nn.Module):
         filt_count = filts_min
 
         for a in range(layers):
-            operations += [DebbyDownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=4)]
+            operations += [DebbyDownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
 
