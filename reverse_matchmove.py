@@ -73,7 +73,7 @@ class ReverseMatchmove:
                                                  output_res=params["res"],
                                                  train=False)
 
-        self.repo_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/dataset_repo.csv',
+        self.repo_data = load.ImageMatrixDataset(f'./data/{params["dataset"]}/{params["repo_name"]}',
                                                  self.transform,
                                                  output_res=params["res"],
                                                  train=False,

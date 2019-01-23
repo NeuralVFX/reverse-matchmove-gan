@@ -135,7 +135,7 @@ def plot_movie_mp4(image_array, filename):
     anim = animation.FuncAnimation(fig, animate, interval=15, frames=len(image_array))
     anim.save(filename, writer='imagemagick')
 
-
+import numpy as np
 def test_repo(mdl, dataset, filename):
     # Use "REPO" dataset to render out sequence and save as a gif
 
@@ -149,9 +149,11 @@ def test_repo(mdl, dataset, filename):
     mdl.model_dict['G'].eval()
     for (real, mat) in dataloader_test:
         mat = mdl.mtran(Variable(mat.cuda()))
+        real = Variable(real).cuda()
+        print (real.std(),real.mean())
         test = mdl.model_dict['G'](mat)
         for i in range(test.shape[0]):
-            anim_test.append(denorm.denorm(test[0]))
+            anim_test.append(np.clip(denorm.denorm(real[0]),0.,1.))
             count += 1
 
     plot_movie_mp4(anim_test, filename)
