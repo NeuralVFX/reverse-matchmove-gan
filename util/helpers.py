@@ -149,11 +149,9 @@ def test_repo(mdl, dataset, filename):
     mdl.model_dict['G'].eval()
     for (real, mat) in dataloader_test:
         mat = mdl.mtran(Variable(mat.cuda()))
-        real = Variable(real).cuda()
-        print (real.std(),real.mean())
         test = mdl.model_dict['G'](mat)
         for i in range(test.shape[0]):
-            anim_test.append(denorm.denorm(real[0]))
+            anim_test.append(denorm.denorm(test[0]))
             count += 1
 
     plot_movie_mp4(anim_test, filename)
