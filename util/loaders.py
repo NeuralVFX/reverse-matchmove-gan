@@ -179,10 +179,10 @@ class ImageMatrixDataset:
         matrix = np.array(matrix).reshape(4, 4).astype('float64')
         focal_len = self.df.iloc[index, 16]
         filename = self.df.iloc[index, 17]
-        #if self.repo:
-        #    image = np.ones([self.output_res, self.output_res, 3])
-        #else:
-        image = cv2_open(os.path.join(self.path, filename))
+        if self.repo:
+            image = np.ones([self.output_res, self.output_res, 3])
+        else:
+            image = cv2_open(os.path.join(self.path, filename))
         seed = (int((index - self.offset_id) / self.batch_size) * self.epoch_seed)
         image, matrix = self.apply_augmentation(image, matrix, focal_len, seed)
 
