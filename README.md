@@ -7,7 +7,7 @@ My dataset was created by photographing many random angles of a statue in Chiang
 The Chiang Mai dataset can be downloaded here: http://neuralvfx.com/datasets/reverse_matchmove/chiang_mai_hi.rar
 
 # Generated Video Example
-![](examples/vimeo_video.jpg)
+[![](examples/vimeo_video.jpg)](https://vimeo.com/312738989)
 
 # Code Usage
 Usage instructions found here: [user manual page](USAGE.md).
