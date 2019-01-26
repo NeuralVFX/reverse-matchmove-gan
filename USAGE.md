@@ -36,6 +36,7 @@ python train.py --dataset chiang_mai_hi --train_epoch 500 --save_root chiang_mai
 --l1_weight, default=3., type=float                            # Multiplier for L1 loss
 --perceptual_weight, default=1.25, type=float                  # Multiplier for perceptual loss
 --disc_perceptual_weight, default=1.25, type=float             # Multiplier for discriminator perceptual loss
+--dp_mult, default=25, type=float                              # Amplifier for discriminator perceptual loss
 --disc_loss_weight, default=.001, type=float                   # Multiplier for traditional discriminator loss
 --train_epoch, default=500, type=int                           # Number of epochs to train for
 --beta1, default=.5, type=float                                # Beta1 value used by optimizer
