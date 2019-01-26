@@ -32,7 +32,7 @@ python train.py --dataset chiang_mai --train_epoch 200 --save_root chiang_mai --
 --workers, default=8, type=int                                 # How many threads to help with dataloading
 --res, default=512, type=int                                   # Image resolution, for dataloading, and generator (must be a power of 2: 128, 256, 512, 1024)
 --vgg_layers_p, default=[0,2,4,6,8], type=int                  # Layers of VGG to use for perceptual loss
---vgg_layers_weight, default=[1,1,1,1,1], type=float           @ Weight multiplier for each VGG layer 
+--vgg_layers_weight, default=[1,1,1,1,1], type=float           # Weight multiplier for each VGG layer 
 --l1_weight, default=3., type=float                            # Multiplier for L1 loss
 --perceptual_weight, default=1.25, type=float                  # Multiplier for perceptual loss
 --disc_perceptual_weight, default=1.25, type=float             # Multiplier for discriminator perceptual loss
@@ -40,7 +40,7 @@ python train.py --dataset chiang_mai --train_epoch 200 --save_root chiang_mai --
 --train_epoch, default=500, type=int                           # Number of epochs to train for
 --beta1, default=.5, type=float                                # Beta1 value used by optimizer
 --beta2, default=.999, type=float                              # Beta2 value used by optimizer
---weight_decay, default=0, type=float                          W Weight decay for generator
+--weight_decay, default=0, type=float                          # Weight decay for generator
 --drop, default=.0, type=float                                 # Multiplier dropout on later layers of generator
 --center_drop, default=.0, type=float                          # Multiplier dropout on first two layers of generator
 --lr, default=2e-4, type=float                                 # Learning rate
