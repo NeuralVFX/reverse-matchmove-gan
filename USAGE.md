@@ -41,8 +41,8 @@ python train.py --dataset chiang_mai_hi --train_epoch 500 --save_root chiang_mai
 --beta1, default=.5, type=float                                # Beta1 value used by optimizer
 --beta2, default=.999, type=float                              # Beta2 value used by optimizer
 --weight_decay, default=0, type=float                          # Weight decay for generator
---drop, default=.0, type=float                                 # Multiplier dropout on later layers of generator
---center_drop, default=.0, type=float                          # Multiplier dropout on first two layers of generator
+--drop, default=.0, type=float                                 # Multiplier for dropout on later layers of generator
+--center_drop, default=.0, type=float                          # Multiplier for dropout on first two layers of generator
 --lr, default=2e-4, type=float                                 # Learning rate
 --lr_drop_start, default=50, type=int                          # Epoch on which the learning rate will begin to drop
 --lr_drop_every, default=50, type=int                          # How many epochs between every learning rate drop, learning rate will cut in half each time
