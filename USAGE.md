@@ -1,7 +1,4 @@
 
-# This repo is under construction! Not ready to clone quite yet!
-
-
 ## Getting Started
 - Check your python version, this is built on `python 3.6`
 - Install `pytorch 0.4.0` and dependencies from https://pytorch.org/
