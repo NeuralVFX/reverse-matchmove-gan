@@ -13,7 +13,7 @@
 git clone https://github.com/NeuralVFX/reverse-matchmove-gan.git
 cd reverse-matchmove-gan
 ```
-- Download the dataset (e.g. [Chiang Mai](http://neuralvfx.com/datasets/reverse_matchmove/chiang_mai.rar)):
+- Download the dataset (e.g. [Chiang Mai](http://neuralvfx.com/datasets/reverse_matchmove/chiang_mai_hi.rar)):
 ```bash
 bash data/get_test_dataset.sh
 ```
@@ -30,28 +30,35 @@ python train.py --dataset chiang_mai --train_epoch 200 --save_root chiang_mai --
 
 ## Command Line Arguments
 ```
---dataset, default='chiang_mai', type=str                      # Dataset folder name
+--dataset, default='chiang_mai_hi', type=str                      # Dataset folder name
 --batch_size, default=5, type=int                              # Training batch size
 --workers, default=8, type=int                                 # How many threads to help with dataloading
 --res, default=512, type=int                                   # Image resolution, for dataloading, and generator (must be a power of 2: 128, 256, 512, 1024)
---vgg_layers_c, default=[2,7,12], type=int                     # Layers of VGG to use for perceptual loss
+--vgg_layers_p, default=[0,2,4,6,8], type=int                  # Layers of VGG to use for perceptual loss
+--vgg_layers_weight, default=[1,1,1,1,1], type=float           @ Weight multiplier for each VGG layer 
 --l1_weight, default=3., type=float                            # Multiplier for L1 loss
---content_weight, default=2.5, type=float                      # Multiplier for perceptual loss
---vgg_weight_div, default=1, type=float                        # Multiplier for each next layer in VGG perceptual loss
---train_epoch, default=200, type=int                           # Number of epochs to train for
+--perceptual_weight, default=1.25, type=float                  # Multiplier for perceptual loss
+--disc_perceptual_weight, default=1.25, type=float             # Multiplier for discriminator perceptual loss
+--disc_loss_weight, default=.001, type=float                   # Multiplier for traditional discriminator loss
+--train_epoch, default=500, type=int                           # Number of epochs to train for
 --beta1, default=.5, type=float                                # Beta1 value used by optimizer
 --beta2, default=.999, type=float                              # Beta2 value used by optimizer
---drop, default=.01, type=float                                # Multiplier dropout on later layers of generator
---center_drop, default=.01, type=float                         # Multiplier dropout on first two layers of generator
+--weight_decay, default=0, type=float                          W Weight decay for generator
+--drop, default=.0, type=float                                 # Multiplier dropout on later layers of generator
+--center_drop, default=.0, type=float                          # Multiplier dropout on first two layers of generator
 --lr, default=2e-4, type=float                                 # Learning rate
 --lr_drop_start, default=50, type=int                          # Epoch on which the learning rate will begin to drop
 --lr_drop_every, default=50, type=int                          # How many epochs between every learning rate drop, learning rate will cut in half each time
+--train_gen_every default=1, type=int                          # How many times the Discriminator should train between training the Generator
 --ids_test, default=[1,100], type=int                          # Ids from test set for preview images
 --ids_train, default=[0,2], type=int                           # Ids from training set for preview images
 --save_every, default=5, type=int                              # How many epochs between each model save
 --save_img_every, default=1, type=int                          # How many epochs between saving image
 --save_root, default='chiang_mai', type=str                    # Prefix for files created by the model under the /output directory
+--repo_name, default='dataset_repo.csv', type=str              # Name of repo CSV file, change to load different camera path CSV files to test     
+--reset, default=False, type=bool                              # This starts history recording over from scratch, but keeps existing weights
 --load_state, type=str                                         # Optional: filename of state to load and resume training from
+--just_make_gif, default=False, type=bool                      # Turn this on if you simply want to load weights and make a new animated gif from the repo file    
 ```
 
 ## Data Folder Structure

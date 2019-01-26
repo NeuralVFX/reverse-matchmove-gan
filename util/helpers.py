@@ -34,7 +34,7 @@ def weights_init_normal(m):
 
     classname = m.__class__.__name__
     if hasattr(m, 'no_init'):
-        print (f'Skipping Init on Pre-trained:{classname}')
+        print(f'Skipping Init on Pre-trained:{classname}')
     else:
         if 'ConvTrans' == classname:
             pass

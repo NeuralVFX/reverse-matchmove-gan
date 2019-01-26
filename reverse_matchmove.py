@@ -10,6 +10,7 @@ from util import helpers as helper
 from util import loaders as load
 from models import networks as n
 import torch.nn as nn
+
 plt.switch_backend('agg')
 
 
@@ -100,11 +101,11 @@ class ReverseMatchmove:
                                           std=[.229, .224, .225])
         self.vgg_tran.cuda()
 
-        self.model_dict['G'] = n.Generator(layers = int(math.log(params["res"],2)-3),
+        self.model_dict['G'] = n.Generator(layers=int(math.log(params["res"], 2) - 3),
                                            drop=params['drop'],
                                            center_drop=params['center_drop'])
 
-        self.model_dict['D'] = n.UnshuffleDiscriminator()#n.make_vgg(patch = True, use_grad=True)
+        self.model_dict['D'] = n.Discriminator()  # n.make_vgg(patch = True, use_grad=True)
 
         self.vgg = n.make_vgg()
         self.vgg.cuda()
@@ -126,21 +127,20 @@ class ReverseMatchmove:
         self.perceptual_loss.cuda()
 
         disc_convs = [list(self.model_dict['D'].children())[0][1],
-                        list(list(self.model_dict['D'].children())[0][2].children())[0][0],
-                        list(list(self.model_dict['D'].children())[0][3].children())[0][0],
-                        list(list(self.model_dict['D'].children())[0][4].children())[0][0]]
+                      list(list(self.model_dict['D'].children())[0][2].children())[0][0],
+                      list(list(self.model_dict['D'].children())[0][3].children())[0][0],
+                      list(list(self.model_dict['D'].children())[0][4].children())[0][0]]
 
         disc_hooks = [n.SetHook(i) for i in disc_convs]
 
         self.disc_perceptual_loss = n.PerceptualLoss(self.model_dict['D'],
-                                                params['disc_perceptual_weight'],
-                                                params['l1_weight'],
-                                                params['vgg_layers_p'],
-                                                [1,1,1,1],
-                                                hooks = disc_hooks)
+                                                     params['disc_perceptual_weight'],
+                                                     params['l1_weight'],
+                                                     params['vgg_layers_p'],
+                                                     [1, 1, 1, 1],
+                                                     hooks=disc_hooks)
 
         self.disc_perceptual_loss.cuda()
-
 
         # Setup optimizers
         self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
@@ -192,7 +192,8 @@ class ReverseMatchmove:
 
         for i in self.model_dict.keys():
             if i in state['models'].keys():
-                self.model_dict[i].load_state_dict(state['models'][i],strict=False)
+                self.model_dict[i].load_state_dict(state['models'][i], strict=False)
+
         for i in self.opt_dict.keys():
             if i in state['optimizers'].keys():
                 self.opt_dict[i].load_state_dict(state['optimizers'][i])
@@ -250,7 +251,6 @@ class ReverseMatchmove:
         lr_mult = 1 / math.pow(2, div)
         return lr_mult
 
-
     def gen(self, matrix):
         self.set_grad("G", False)
         self.opt_dict["G"].zero_grad()
@@ -278,10 +278,11 @@ class ReverseMatchmove:
         self.loss_batch_dict['G_Loss'] = -disc_result_fake.mean()
         self.loss_batch_dict['DP_Loss'] = sum(disc_perc_losses)
 
-        total_loss = self.loss_batch_dict['L1_Loss']+self.loss_batch_dict['P_Loss']+(self.loss_batch_dict['DP_Loss']*self.params['dp_mult'])
+        total_loss = self.loss_batch_dict['L1_Loss'] + self.loss_batch_dict['P_Loss'] + (
+                    self.loss_batch_dict['DP_Loss'] * self.params['dp_mult'])
 
-        if self.params['disc_mult'] > 0.:
-            total_loss += (self.params['disc_mult'] * self.loss_batch_dict['G_Loss'] )
+        if self.params['disc_loss_weight'] > 0.:
+            total_loss += (self.params['disc_loss_weight'] * self.loss_batch_dict['G_Loss'])
 
         total_loss.backward()
         self.opt_dict["G"].step()
@@ -299,7 +300,6 @@ class ReverseMatchmove:
         self.loss_batch_dict_test['P_Loss'] = sum(perc_losses)
 
         # get discriminator loss
-
         disc_perc_losses, disc_result_fake = self.disc_perceptual_loss(fake,
                                                                        real,
                                                                        disc_mode=True)
@@ -311,7 +311,6 @@ class ReverseMatchmove:
     def train_disc(self, real, fake):
         self.set_grad("G", False)
         self.set_grad("D", True)
-        # train function for generator
         self.opt_dict["D"].zero_grad()
 
         # discriminate fake samples
@@ -321,19 +320,19 @@ class ReverseMatchmove:
 
         # add up disc a loss and step
 
-        self.loss_batch_dict['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
+        self.loss_batch_dict['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()(1.0 + d_result_fake).mean()
         self.loss_batch_dict['D_Loss'].backward()
         self.opt_dict["D"].step()
 
-
     def test_disc(self, real, fake):
         # discriminate fake samples
-         d_result_fake = self.model_dict["D"](fake)
+        d_result_fake = self.model_dict["D"](fake)
         # discriminate real samples
-         d_result_real = self.model_dict["D"](real)
+        d_result_real = self.model_dict["D"](real)
 
         # add up disc a loss and step
-         self.loss_batch_dict_test['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()( 1.0 + d_result_fake).mean()
+        self.loss_batch_dict_test['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()(
+            1.0 + d_result_fake).mean()
 
     def set_grad(self, model, grad):
         for param in self.model_dict[model].parameters():
@@ -388,7 +387,7 @@ class ReverseMatchmove:
 
         # Train loop
         for sub_epoch in range(self.params['train_gen_every']):
-            print (f'Sub Epoch:{sub_epoch}')
+            print(f'Sub Epoch:{sub_epoch}')
             for real, matrix in tqdm(self.train_loader):
                 matrix = Variable(matrix).cuda()
                 matrix = self.mtran(matrix)

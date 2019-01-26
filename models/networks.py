@@ -12,7 +12,6 @@ from torch.nn.utils import spectral_norm
 
 class TensorTransform(nn.Module):
     # Used to convert between default color space and VGG colorspace
-
     def __init__(self, res=256, mean=[.485, .456, .406], std=[.229, .224, .225]):
         super(TensorTransform, self).__init__()
 
@@ -34,7 +33,6 @@ class TensorTransform(nn.Module):
 
 class MatrixTransform(nn.Module):
     # Used to scale input by mean and standard deviation
-
     def __init__(self, mean, std):
         super(MatrixTransform, self).__init__()
         self.mean = mean
@@ -62,9 +60,9 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 
 def spectral_conv_block(ni, nf, kernel_size=3, stride=1):
     # conv_block with spectral normalization
+
     layers = []
-    #pad = Pad( kernel_size = kernel_size)
-    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size,padding=kernel_size//2,stride=stride))
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2, stride=stride))
     relu = nn.LeakyReLU(inplace=True)
 
     layers += [conv, relu]
@@ -73,7 +71,6 @@ def spectral_conv_block(ni, nf, kernel_size=3, stride=1):
 
 class UpResBlock(nn.Module):
     # Upres block which uses pixel shuffle with res connection
-
     def __init__(self, ic, oc, kernel_size=3, drop=.1):
         super(UpResBlock, self).__init__()
         self.oc = oc
@@ -96,7 +93,6 @@ class UpResBlock(nn.Module):
 
 class TransposeBlock(nn.Module):
     # Transpose Convolution with res connection
-
     def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001):
         super(TransposeBlock, self).__init__()
         self.oc = oc
@@ -105,7 +101,7 @@ class TransposeBlock(nn.Module):
 
         operations = []
         operations += [nn.ConvTranspose2d(in_channels=ic, out_channels=oc, padding=padding, output_padding=0,
-                                         kernel_size=kernel_size, stride=stride, bias=False)]
+                                          kernel_size=kernel_size, stride=stride, bias=False)]
 
         operations += [nn.LeakyReLU(inplace=True), nn.BatchNorm2d(oc), nn.Dropout(drop)]
 
@@ -126,46 +122,10 @@ class TransposeBlock(nn.Module):
         return x + (res_x * .2)
 
 
-class ReverseShuffle(nn.Module):
-    # Pixel Shuffle which replaces conv stride 2
-    def __init__(self):
-        super(ReverseShuffle, self).__init__()
-
-    def forward(self, fm):
-        r = 2
-        b, c, h, w = fm.shape
-        out_channel = c * (r ** 2)
-        out_h = h // r
-        out_w = w // r
-        fm_view = fm.contiguous().view(b, c, out_h, r, out_w, r)
-        fm_prime = fm_view.permute(0, 1, 3, 5, 2, 4).contiguous().view(b, out_channel, out_h, out_w)
-        return fm_prime
-
-
 class DownRes(nn.Module):
     # Add Layer of Spatia Mapping
     def __init__(self, ic, oc, kernel_size=3):
         super(DownRes, self).__init__()
-        self.kernel_size = kernel_size
-        self.oc = oc
-        self.conv = spectral_conv_block(ic, oc // 4, kernel_size=kernel_size)
-        self.rev_shuff = ReverseShuffle()
-
-    def forward(self, x):
-        unsqueeze_x = x.unsqueeze(0)
-
-        x = self.conv(x)
-        x = self.rev_shuff(x)
-
-        upres_x = nn.functional.interpolate(unsqueeze_x, size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
-                                            align_corners=True)[0]
-        x = x + (upres_x * .2)
-        return x
-
-class DebbyDownRes(nn.Module):
-    # Add Layer of Spatia Mapping
-    def __init__(self, ic, oc, kernel_size=3):
-        super(DebbyDownRes, self).__init__()
         self.kernel_size = kernel_size
         self.oc = oc
         self.conv = spectral_conv_block(ic, oc, kernel_size=kernel_size, stride=2)
@@ -188,7 +148,6 @@ class DebbyDownRes(nn.Module):
 
 class Generator(nn.Module):
     # Generator to convert Z sized vector to image
-
     def __init__(self, layers=6, z_size=13, filts=1024, max_filts=512, min_filts=128, kernel_size=4, channels=3,
                  drop=.1, center_drop=.1):
         super(Generator, self).__init__()
@@ -219,29 +178,30 @@ class Generator(nn.Module):
         return F.tanh(x)
 
 
-class UnshuffleDiscriminator(nn.Module):
+class Discriminator(nn.Module):
     # Using reverse shuffling should reduce the repetitive shimmering patterns
-    def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3,
-                 drop=.01):
-        super(UnshuffleDiscriminator, self).__init__()
+    def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3):
+        super(Discriminator, self).__init__()
         self.use_frac = use_frac
         operations = []
         if use_frac:
             self.frac = frac
 
         in_operations = [nn.ReflectionPad2d(3),
-                         spectral_norm(nn.Conv2d(in_channels=channels, out_channels=filts_min, kernel_size=7, stride=1))]
+                         spectral_norm(
+                             nn.Conv2d(in_channels=channels, out_channels=filts_min, kernel_size=7, stride=1))]
 
         filt_count = filts_min
 
         for a in range(layers):
-            operations += [DebbyDownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
+            operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
 
         out_operations = [
-            spectral_norm(nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=kernel_size,
-                      stride=1))]
+            spectral_norm(
+                nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=kernel_size,
+                          stride=1))]
 
         operations = in_operations + operations + out_operations
         self.operations = nn.Sequential(*operations)
@@ -255,23 +215,19 @@ class UnshuffleDiscriminator(nn.Module):
         return x
 
 
-def make_vgg(depth=9, patch=False):
-    # VGG which can be used as patch discriminator also
+def make_vgg(depth=9):
+    # VGG with max pool removed, cut only to the depth we wil use
     vgg = models.vgg19(pretrained=True)
     children = list(vgg.children())
     children.pop()
-    # remove max pool
+
+    # remove max pool to reduce JPG looking artifacts
     del children[0][4]
     del children[0][8]
     operations = children[0][:depth]
 
-
     for op in operations:
         op.no_init = True
-
-    if patch:
-        operations.add_module("conv_out",
-                              nn.Conv2d(in_channels=256, out_channels=1, padding=0, kernel_size=1, stride=1))
 
     vgg = nn.Sequential(*operations)
 
@@ -303,14 +259,14 @@ class SetHook:
 class PerceptualLoss(nn.Module):
     # Store Hook, Calculate Perceptual Loss
 
-    def __init__(self, vgg, ct_wgt, l1_weight, perceptual_layer_ids, weight_list, hooks = None):
+    def __init__(self, vgg, ct_wgt, l1_weight, perceptual_layer_ids, weight_list, hooks=None):
         super().__init__()
         self.m, self.ct_wgt, self.l1_weight = vgg, ct_wgt, l1_weight
 
         if not hooks:
             self.cfs = [SetHook(vgg[i]) for i in perceptual_layer_ids]
         else:
-            print ('Using custom hooks')
+            print('Using custom hooks')
             self.cfs = hooks
 
         ratio = ct_wgt / sum(weight_list)
@@ -325,7 +281,7 @@ class PerceptualLoss(nn.Module):
             fake_result = self.m(fake_img)
             inp_feats = [o.feats for o in self.cfs]
             result_perc = [F.l1_loss(inp.view(-1), targ.view(-1)) * layer_weight for inp, targ, layer_weight in
-                     zip(inp_feats, targ_feats, self.weight_list)]
+                           zip(inp_feats, targ_feats, self.weight_list)]
         else:
             result_perc = [torch.zeros(1).cuda() for layer_weight in self.weight_list]
             fake_result = torch.zeros(1).cuda()

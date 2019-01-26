@@ -115,7 +115,6 @@ class TranImgMat(object):
         image_a = sample['image']
         matrix = sample['matrix']
         focal_len = sample['focal_len']
-        seed = sample['seed']
         image, mat, focal_len = self.get_random_transform(image_a, matrix, focal_len)
 
         return {'image': image, 'matrix': mat, 'focal_len': focal_len}
@@ -158,17 +157,16 @@ class ImageMatrixDataset:
         self.transform = transform
         self.train = train
         self.offset_id = 0
-        self.epoch_seed = 1.0
         self.batch_size = 1
         self.repo = repo
 
-    def apply_augmentation(self, image, matrix, focal_len, seed):
+    def apply_augmentation(self, image, matrix, focal_len):
         if self.train:
             # only randomize while training
-            data_dict = self.data_transforms({'image': image, 'matrix': matrix, 'focal_len': focal_len, 'seed': seed})
+            data_dict = self.data_transforms({'image': image, 'matrix': matrix, 'focal_len': focal_len})
         else:
             data_dict = self.prev_data_transforms(
-                {'image': image, 'matrix': matrix, 'focal_len': focal_len, 'seed': seed})
+                {'image': image, 'matrix': matrix, 'focal_len': focal_len})
         norm_img = np.rollaxis(self.transform.norm(data_dict['image']), 2)
         matrix = data_dict['matrix'].reshape(16)[:12]
         matrix = np.append(matrix, data_dict['focal_len'])
@@ -183,8 +181,8 @@ class ImageMatrixDataset:
             image = np.ones([self.output_res, self.output_res, 3])
         else:
             image = cv2_open(os.path.join(self.path, filename))
-        seed = (int((index - self.offset_id) / self.batch_size) * self.epoch_seed)
-        image, matrix = self.apply_augmentation(image, matrix, focal_len, seed)
+
+        image, matrix = self.apply_augmentation(image, matrix, focal_len)
 
         return torch.FloatTensor(image), torch.FloatTensor(matrix)
 
