@@ -21,4 +21,4 @@ Usage instructions found here: [user manual page](USAGE.md).
 ![](examples/chiang_mai_matrix_data_b.png)
 
 # Example Results
-![](examples/chiang_mai_example_a.png)
+![](examples/chiang_mai_example_hi_a.png)
