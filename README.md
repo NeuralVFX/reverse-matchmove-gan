@@ -15,8 +15,5 @@ Usage instructions found here: [user manual page](USAGE.md).
 # Example Data Set
 ![](examples/chiang_mai_matrix_data_b.png)
 
-# Example Augmentation
-![](examples/augmentation_a.png)
-
 # Example Results
 ![](examples/chiang_mai_example_a.png)
