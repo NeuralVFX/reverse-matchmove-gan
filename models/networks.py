@@ -184,7 +184,7 @@ class Generator(nn.Module):
         for a in range(layers):
             print ('up_block')
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
-            if a == 1:
+            if a == 2:
                 print('attn')
                 operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
             filt_count = int(filt_count * 2)
