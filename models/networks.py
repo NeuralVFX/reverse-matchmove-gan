@@ -46,7 +46,7 @@ class MatrixTransform(nn.Module):
 def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     # Conv block which stores ICNR attribute for initialization
     layers = []
-    conv = nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2)
+    conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2))
     if icnr:
         conv.icnr = True
 
@@ -100,8 +100,8 @@ class TransposeBlock(nn.Module):
             padding = int(kernel_size // 2 // stride)
 
         operations = []
-        operations += [spectral_norm(nn.ConvTranspose2d(in_channels=ic, out_channels=oc, padding=padding, output_padding=0,
-                                          kernel_size=kernel_size, stride=stride, bias=False))]
+        operations += [nn.ConvTranspose2d(in_channels=ic, out_channels=oc, padding=padding, output_padding=0,
+                                          kernel_size=kernel_size, stride=stride, bias=False)]
 
         operations += [nn.LeakyReLU(inplace=True), nn.BatchNorm2d(oc), nn.Dropout(drop)]
 
