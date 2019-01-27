@@ -186,7 +186,7 @@ class Generator(nn.Module):
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
             if a == 2:
                 print('attn')
-                operations += [int(min(max_filts, filt_count * 2))]
+                operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
             filt_count = int(filt_count * 2)
 
         operations += [
