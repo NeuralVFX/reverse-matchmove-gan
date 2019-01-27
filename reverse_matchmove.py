@@ -129,10 +129,7 @@ class ReverseMatchmove:
         disc_convs = [list(self.model_dict['D'].children())[0][1],
                       list(list(self.model_dict['D'].children())[0][2].children())[0][0],
                       list(list(self.model_dict['D'].children())[0][3].children())[0][0],
-                      list(list(self.model_dict['D'].children())[0][4].children())[0],
-                      list(list(self.model_dict['D'].children())[0][4].children())[1],
-                      list(list(self.model_dict['D'].children())[0][4].children())[2],
-                      list(list(self.model_dict['D'].children())[0][5].children())[0][0]]
+                      list(list(self.model_dict['D'].children())[0][4].children())[0][0]]
 
         disc_hooks = [n.SetHook(i) for i in disc_convs]
 
