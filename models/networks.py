@@ -225,7 +225,7 @@ class Discriminator(nn.Module):
 
         for a in range(layers):
             operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
-            if a == 0:
+            if a == 1:
                 operations += [SelfAttention(min(filt_count * 2, filts))]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
