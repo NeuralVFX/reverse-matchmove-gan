@@ -184,9 +184,11 @@ class Generator(nn.Module):
         for a in range(layers):
             print ('up_block')
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
-            if a == 1:
+            if a == 2:
                 print('attn')
-                operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
+                att =  SelfAttention(int(min(max_filts, filt_count * 2)))
+
+               # operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
             filt_count = int(filt_count * 2)
 
         operations += [
@@ -202,7 +204,9 @@ class Generator(nn.Module):
                        spectral_norm(nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1))]
 
         self.model = nn.Sequential(*operations)
-
+        self.att = att
+    def fix_net(self):
+        self.model = nn.Sequential(*[list(self.model.children())[:5] + [self.att] + list(self.model.children())[5:]])
     def forward(self, x):
         x = self.model(x)
         return F.tanh(x)
