@@ -28,7 +28,7 @@ python train.py --dataset chiang_mai_hi --train_epoch 500 --save_root chiang_mai
 ## Command Line Arguments
 ```
 --dataset, default='chiang_mai_hi', type=str                   # Dataset folder name
---batch_size, default=5, type=int                              # Training batch size
+--batch_size, default=4, type=int                              # Training batch size
 --workers, default=8, type=int                                 # How many threads to help with dataloading
 --res, default=512, type=int                                   # Image resolution, for dataloading, and generator (must be a power of 2: 128, 256, 512, 1024)
 --vgg_layers_p, default=[0,2,4,6,8], type=int                  # Layers of VGG to use for perceptual loss
