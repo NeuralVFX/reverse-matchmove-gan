@@ -43,7 +43,7 @@ class MatrixTransform(nn.Module):
         return result
 
 
-def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
+def gen_conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     # Conv block which stores ICNR attribute for initialization
     layers = []
     conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2))
@@ -58,7 +58,7 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     return nn.Sequential(*layers)
 
 
-def spectral_conv_block(ni, nf, kernel_size=3, stride=1):
+def disc_con_block(ni, nf, kernel_size=3, stride=1):
     # conv_block with spectral normalization
 
     layers = []
@@ -74,7 +74,7 @@ class UpResBlock(nn.Module):
     def __init__(self, ic, oc, kernel_size=3, drop=.1):
         super(UpResBlock, self).__init__()
         self.oc = oc
-        self.conv = conv_block(ic, oc * 4, kernel_size=kernel_size, drop=drop)
+        self.conv = gen_conv_block(ic, oc * 4, kernel_size=kernel_size, drop=drop)
         self.ps = nn.PixelShuffle(2)
 
     def forward(self, x):
@@ -133,7 +133,7 @@ class DownRes(nn.Module):
         super(DownRes, self).__init__()
         self.kernel_size = kernel_size
         self.oc = oc
-        self.conv = spectral_conv_block(ic, oc, kernel_size=kernel_size, stride=2)
+        self.conv = disc_con_block(ic, oc, kernel_size=kernel_size, stride=2)
 
     def forward(self, x):
         unsqueeze_x = x.unsqueeze(0)
@@ -204,7 +204,7 @@ class Discriminator(nn.Module):
             filt_count = int(filt_count * 2)
 
         out_operations = [
-            spectral_norm(
+                spectral_norm(
                 nn.Conv2d(in_channels=min(filt_count, filts), out_channels=1, padding=1, kernel_size=kernel_size,
                           stride=1))]
 
