@@ -11,6 +11,7 @@ from util import loaders as load
 from models import networks as n
 import torch.nn as nn
 
+torch.multiprocessing.set_sharing_strategy('file_system')
 plt.switch_backend('agg')
 
 
