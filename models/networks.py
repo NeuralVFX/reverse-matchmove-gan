@@ -146,6 +146,27 @@ class DownRes(nn.Module):
         return x
 
 
+class SelfAttention(nn.Module):
+    def __init__(self, in_channel):
+        super().__init__()
+        self.query = spectral_norm(nn.Conv1d(in_channel, in_channel // 8, 1))
+        self.key = spectral_norm(nn.Conv1d(in_channel, in_channel // 8, 1))
+        self.value = spectral_norm(nn.Conv1d(in_channel, in_channel, 1))
+        self.gamma = nn.Parameter(torch.tensor(0.0))
+
+    def forward(self, input):
+        shape = input.shape
+        flatten = input.view(shape[0], shape[1], -1)
+        query = self.query(flatten).permute(0, 2, 1)
+        key = self.key(flatten)
+        value = self.value(flatten)
+        query_key = torch.bmm(query, key)
+        attn = F.softmax(query_key, 1)
+        attn = torch.bmm(value, attn)
+        attn = attn.view(*shape)
+        out = self.gamma * attn + input
+        return out
+
 ############################################################################
 # Generator and VGG
 ############################################################################
@@ -161,7 +182,11 @@ class Generator(nn.Module):
         filt_count = min_filts
 
         for a in range(layers):
+            print ('up_block')
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
+            if a == 1:
+                print('attn')
+                operations += [int(min(max_filts, filt_count * 2))]
             filt_count = int(filt_count * 2)
 
         operations += [

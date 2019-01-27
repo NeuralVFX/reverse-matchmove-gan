@@ -49,6 +49,8 @@ def weights_init_normal(m):
             nn.init.normal(m.weight.data, 0, .02)
         elif 'Conv2d' in classname or 'ConvTrans' in classname:
             nn.init.orthogonal_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.zero_()
             # only use ICNR if icrn attr found
             if classname == 'Conv2d' and hasattr(m, 'icnr'):
                 kern = icnr(m.weight)
