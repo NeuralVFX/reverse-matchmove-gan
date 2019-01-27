@@ -408,6 +408,7 @@ class ReverseMatchmove:
     def train(self):
         # Train following learning rate schedule
         params = self.params
+        self.model_dict["G"] = helper.add_sn(self.model_dict["G"])
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
 
