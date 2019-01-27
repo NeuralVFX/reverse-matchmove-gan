@@ -184,7 +184,7 @@ class Generator(nn.Module):
         for a in range(layers):
             print ('up_block')
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
-            if a == 2:
+            if a == 1:
                 print('attn')
                 operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
             filt_count = int(filt_count * 2)
@@ -225,8 +225,8 @@ class Discriminator(nn.Module):
 
         for a in range(layers):
             operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
-            if a == 0:
-                operations += [SelfAttention(min(filt_count * 2, filts))]
+            #if a == 0:
+            #    operations += [SelfAttention(min(filt_count * 2, filts))]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
 
