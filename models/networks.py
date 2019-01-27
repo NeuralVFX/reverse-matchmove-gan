@@ -206,7 +206,9 @@ class Generator(nn.Module):
         self.model = nn.Sequential(*operations)
         self.att = att
     def fix_net(self):
-        self.model = nn.Sequential(*[list(self.model.children())[:5] + [self.att] + list(self.model.children())[5:]])
+        fix = list(self.model.children())[:5] + [self.att] + list(self.model.children())[5:]
+        print (fix)
+        self.model = nn.Sequential(*fix)
     def forward(self, x):
         x = self.model(x)
         return F.tanh(x)
