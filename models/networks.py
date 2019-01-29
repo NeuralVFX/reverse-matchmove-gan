@@ -204,7 +204,7 @@ class Generator(nn.Module):
                        spectral_norm(nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1))]
 
         self.model = nn.Sequential(*operations)
-        self.att = att
+        #self.att = att
     #def fix_net(self):
     #    fix = list(self.model.children())[:5] + [self.att] + list(self.model.children())[5:]
     #    print (fix)
