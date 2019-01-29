@@ -100,13 +100,13 @@ class TransposeBlock(nn.Module):
             padding = int(kernel_size // 2 // stride)
 
         operations = []
-        operations += [spectral_norm(nn.ConvTranspose2d(in_channels=ic,
+        operations += [nn.ConvTranspose2d(in_channels=ic,
                                                         out_channels=oc,
                                                         padding=padding,
                                                         output_padding=0,
                                                         kernel_size=kernel_size,
                                                         stride=stride,
-                                                        bias=False))]
+                                                        bias=False)]
 
         operations += [nn.LeakyReLU(inplace=True), nn.BatchNorm2d(oc), nn.Dropout(drop)]
 
@@ -204,7 +204,7 @@ class Generator(nn.Module):
                        spectral_norm(nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1))]
 
         self.model = nn.Sequential(*operations)
-        #self.att = att
+        self.att = att
     #def fix_net(self):
     #    fix = list(self.model.children())[:5] + [self.att] + list(self.model.children())[5:]
     #    print (fix)
