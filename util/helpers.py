@@ -31,7 +31,7 @@ def icnr(x, scale=2, init=nn.init.orthogonal_):
 def add_sn(m):
         for name, c in m.named_children():
             m.add_module(name, add_sn(c))
-        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+        if isinstance(m,  nn.ConvTranspose2d):
             return nn.utils.spectral_norm(m)
         else:
             return m
