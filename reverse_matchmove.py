@@ -412,7 +412,7 @@ class ReverseMatchmove:
                                         betas=(params['beta1'],
                                                params['beta2']),
                                         weight_decay=params['weight_decay'])
-        
+
        # self.model_dict["G"].fix_net()
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
