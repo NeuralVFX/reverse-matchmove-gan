@@ -201,7 +201,7 @@ class Generator(nn.Module):
         operations.reverse()
 
         operations += [nn.ReflectionPad2d(3),
-                       spectral_norm(nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1))]
+                       nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1)]
 
         self.model = nn.Sequential(*operations)
         #self.att = att
