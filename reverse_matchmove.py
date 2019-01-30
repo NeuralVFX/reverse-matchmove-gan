@@ -146,7 +146,11 @@ class ReverseMatchmove:
         # Setup optimizers
 
         #self.model_dict["G"] = n.superswitch(self.model_dict["G"])
-
+        self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
+                                        lr=params['lr'],
+                                        betas=(params['beta1'],
+                                               params['beta2']),
+                                        weight_decay=params['weight_decay'])
 
         self.opt_dict["D"] = optim.Adam(self.model_dict["D"].parameters(),
                                         lr=params['lr'],
@@ -408,12 +412,8 @@ class ReverseMatchmove:
         # Train following learning rate schedule
         params = self.params
 
-        self.model_dict["G"] = helper.add_sn(self.model_dict["G"])
-        self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
-                                        lr=params['lr'],
-                                        betas=(params['beta1'],
-                                               params['beta2']),
-                                        weight_decay=params['weight_decay'])
+        #self.model_dict["G"] = helper.add_sn(self.model_dict["G"])
+
        # self.model_dict["G"].fix_net()
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
