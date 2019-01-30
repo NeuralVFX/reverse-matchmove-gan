@@ -406,7 +406,7 @@ class ReverseMatchmove:
     def train(self):
         # Train following learning rate schedule
         params = self.params
-        self.model_dict["G"] = n.super_switch(self.model_dict["G"])
+        self.model_dict["G"] = n.superswitch(self.model_dict["G"])
         self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
                                         lr=params['lr'],
                                         betas=(params['beta1'],
