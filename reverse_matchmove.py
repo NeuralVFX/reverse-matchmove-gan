@@ -145,11 +145,7 @@ class ReverseMatchmove:
 
         # Setup optimizers
 
-        self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
-                                        lr=params['lr'],
-                                        betas=(params['beta1'],
-                                               params['beta2']),
-                                        weight_decay=params['weight_decay'])
+
 
         self.opt_dict["D"] = optim.Adam(self.model_dict["D"].parameters(),
                                         lr=params['lr'],
@@ -196,9 +192,9 @@ class ReverseMatchmove:
             if i in state['models'].keys():
                 self.model_dict[i].load_state_dict(state['models'][i], strict=False)
 
-        for i in self.opt_dict.keys():
-            if i in state['optimizers'].keys():
-                self.opt_dict[i].load_state_dict(state['optimizers'][i])
+       # for i in self.opt_dict.keys():
+       #     if i in state['optimizers'].keys():
+       #         self.opt_dict[i].load_state_dict(state['optimizers'][i])
         if not reset:
             self.current_iter = state['iter'] + 1
             self.current_epoch = state['epoch'] + 1
@@ -410,7 +406,12 @@ class ReverseMatchmove:
     def train(self):
         # Train following learning rate schedule
         params = self.params
-
+        self.model_dict["G"] = n.super_switch(self.model_dict["G"])
+        self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
+                                        lr=params['lr'],
+                                        betas=(params['beta1'],
+                                               params['beta2']),
+                                        weight_decay=params['weight_decay'])
         #self.model_dict["G"] = helper.add_sn(self.model_dict["G"])
 
        # self.model_dict["G"].fix_net()

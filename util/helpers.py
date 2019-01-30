@@ -36,6 +36,9 @@ def add_sn(m):
         else:
             return m
 
+
+
+
 def weights_init_normal(m):
     # Set initial state of weights
 

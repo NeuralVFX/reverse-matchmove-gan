@@ -5,9 +5,53 @@ import torchvision.models as models
 from torch.nn.utils import spectral_norm
 
 
+####
+#tests
+
+def weight_transfer(conv, preconv):
+    weight_list = [conv.weight.data[[i for i in range(off, 16, 4)], :, :, :] for off in range(4)]
+    bias_list = [conv.bias.data[[i for i in range(off, 16, 4)]] for off in range(4)]
+    for i in range(len(weight_list)):
+        print('transfer')
+        preconv.conv_list[i].weight.data.copy_(weight_list[i])
+        preconv.conv_list[i].bias.data.copy_(bias_list[i])
+
+
+class PreShuffConv(nn.Module):
+    # Convolution which is compatible with pixel shuffle and spectral norm
+    def __init__(self, ni, nf, kernel_size=3):  # ,init = False, init_conv =None):
+        super(PreShuffConv, self).__init__()
+        self.conv_list = nn.ModuleList(
+            [spectral_norm(nn.Conv2d(ni, nf // 4, kernel_size, padding=kernel_size // 2)) for i in range(4)])
+
+    def forward(self, x):
+        conv_list = [conv(x) for conv in self.conv_list]
+        bs, filts, height, width = conv_list[0].shape[0], conv_list[0].shape[1] * 4, conv_list[0].shape[2], \
+                                   conv_list[0].shape[3]
+        return torch.stack(conv_list, dim=2).view(bs, filts, height, width)
+
+
+def superswitch(m):
+    for name, c in m.named_children():
+        m.add_module(name, superswitch(c))
+    if isinstance(m, (nn.Conv2d,)):
+        classname = m.__class__.__name__
+        if classname == 'Conv2d' and hasattr(m, 'icnr'):
+            preconv = PreShuffConv(m.in_channels, m.out_channels,
+                                   kernel_size=m.kernel_size[0])  # ,init=True,init_conv=m)
+            weight_transfer(m, preconv)
+            return preconv
+        elif classname == 'Conv2d':
+            return spectral_norm(m)
+    else:
+        return m
+
+
+
 ############################################################################
 # Re-usable blocks
 ############################################################################
+
 
 
 class TensorTransform(nn.Module):
