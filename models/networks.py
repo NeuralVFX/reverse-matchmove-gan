@@ -13,8 +13,8 @@ def weight_transfer(conv, preconv):
     bias_list = [conv.bias.data[[i for i in range(off, conv.bias.data.shape[0], 4)]] for off in range(4)]
     for i in range(len(weight_list)):
         print('transfer')
-        preconv.conv_list[i].weight.data.copy_(weight_list[i]).cuda()
-        preconv.conv_list[i].bias.data.copy_(bias_list[i]).cuda()
+        preconv.conv_list[i].weight.data.copy_(weight_list[i])
+        preconv.conv_list[i].bias.data.copy_(bias_list[i])
 
 
 class PreShuffConv(nn.Module):
@@ -40,6 +40,7 @@ def superswitch(m):
             preconv = PreShuffConv(m.in_channels, m.out_channels,
                                    kernel_size=m.kernel_size[0])  # ,init=True,init_conv=m)
             weight_transfer(m, preconv)
+            preconv.cuda()
             return preconv
         elif classname == 'Conv2d':
             return spectral_norm(m)
