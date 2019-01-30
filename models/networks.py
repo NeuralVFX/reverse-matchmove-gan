@@ -9,8 +9,8 @@ from torch.nn.utils import spectral_norm
 #tests
 
 def weight_transfer(conv, preconv):
-    weight_list = [conv.weight.data[[i for i in range(off, 16, 4)], :, :, :] for off in range(4)]
-    bias_list = [conv.bias.data[[i for i in range(off, 16, 4)]] for off in range(4)]
+    weight_list = [conv.weight.data[[i for i in range(off, conv.weight.data.shape[0], 4)], :, :, :] for off in range(4)]
+    bias_list = [conv.bias.data[[i for i in range(off, conv.bias.data.shape[0], 4)]] for off in range(4)]
     for i in range(len(weight_list)):
         print('transfer')
         preconv.conv_list[i].weight.data.copy_(weight_list[i])
