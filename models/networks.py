@@ -237,7 +237,7 @@ class Generator(nn.Module):
             filt_count = int(filt_count * 2)
 
         operations += [
-            UpResBlock(int(min(filts, max_filts )), int(min(max_filts, filt_count)), drop=drop),
+            UpResBlock(filts, int(min(max_filts, filt_count)), drop=drop),
 
             TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop)
         ]
