@@ -200,7 +200,7 @@ class ReverseMatchmove:
         for i in self.opt_dict.keys():
             if i in state['optimizers'].keys():
                 self.opt_dict[i].load_state_dict(state['optimizers'][i])
-                
+
         if not reset:
             self.current_iter = state['iter'] + 1
             self.current_epoch = state['epoch'] + 1
