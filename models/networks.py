@@ -238,6 +238,7 @@ class Generator(nn.Module):
 
         operations += [
             UpResBlock(filts, int(min(max_filts, filt_count)), drop=drop),
+            UpResBlock(filts, filts, drop=drop),
 
             UpResBlock(z_size, filts, drop=drop)
         ]
