@@ -239,7 +239,7 @@ class Generator(nn.Module):
         operations += [
             UpResBlock(filts, int(min(max_filts, filt_count)), drop=drop),
 
-            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop)
+            UpResBlock(z_size, filts, drop=drop)
         ]
 
         operations.reverse()
