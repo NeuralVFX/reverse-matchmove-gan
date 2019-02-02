@@ -36,7 +36,7 @@ class PreShuffConv(nn.Module):
                                    conv_list[0].shape[3]
         return torch.stack(conv_list, dim=2).view(bs, filts, height, width)
 
-    def icnr(self):
+    def init_icnr(self):
         for i in range(len(self.conv_list)):
             print ('preshuff icnr')
             self.conv_list[i].weight.data.copy_(self.conv_list[0].weight.data)
