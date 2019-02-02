@@ -67,6 +67,7 @@ def weights_init_new(m):
     classname = m.__class__.__name__
     if 'Conv2d' in classname and hasattr(m, 'new'):
             nn.init.orthogonal_(m.weight.data)
+            print ('new init')
             if m.bias is not None:
                 m.bias.data.zero_()
 
