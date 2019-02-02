@@ -144,7 +144,15 @@ class ReverseMatchmove:
         self.disc_perceptual_loss.cuda()
 
         # Setup optimizers
-
+        self.model_dict["G"].fix_net()
+        self.model_dict["G"] = n.deconvswitch(self.model_dict["G"])
+        self.model_dict["G"].apply(helper.weights_init_new)
+        self.model_dict["G"].apply(helper.weights_init_icnr)
+        self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
+                                        lr=params['lr'],
+                                        betas=(params['beta1'],
+                                               params['beta2']),
+                                        weight_decay=params['weight_decay'])
 
 
         self.opt_dict["D"] = optim.Adam(self.model_dict["D"].parameters(),
@@ -192,9 +200,9 @@ class ReverseMatchmove:
             if i in state['models'].keys():
                 self.model_dict[i].load_state_dict(state['models'][i], strict=False)
 
-        #for i in self.opt_dict.keys():
-        #    if i in state['optimizers'].keys():
-        #        self.opt_dict[i].load_state_dict(state['optimizers'][i])
+        for i in self.opt_dict.keys():
+            if i in state['optimizers'].keys():
+                self.opt_dict[i].load_state_dict(state['optimizers'][i])
 
         if not reset:
             self.current_iter = state['iter'] + 1
@@ -409,15 +417,7 @@ class ReverseMatchmove:
         params = self.params
 
         #self.model_dict["G"] = helper.add_sn(self.model_dict["G"])
-        self.model_dict["G"].fix_net()
-        self.model_dict["G"] = n.deconvswitch(self.model_dict["G"])
-        self.model_dict["G"].apply(helper.weights_init_new)
-        self.model_dict["G"].apply(helper.weights_init_icnr)
-        self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
-                                        lr=params['lr'],
-                                        betas=(params['beta1'],
-                                               params['beta2']),
-                                        weight_decay=params['weight_decay'])
+
        #
         while self.current_epoch < params["train_epoch"]:
             epoch_start_time = time.time()
