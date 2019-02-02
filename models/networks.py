@@ -48,6 +48,17 @@ def superswitch(m):
         return m
 
 
+def deconvswitch(m):
+    for name, c in m.named_children():
+        m.add_module(name, superswitch(c))
+    classname = m.__class__.__name__
+    if classname == 'TransposeBlock' and hasattr(m, 'kill'):
+            preconv = PreShuffConv(m.ic, m.oc,kernel_size=3)  # ,init=True,init_conv=m)
+            preconv.cuda()
+            return preconv
+    else:
+        return m
+
 
 ############################################################################
 # Re-usable blocks
@@ -91,7 +102,7 @@ class MatrixTransform(nn.Module):
 def gen_conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
     # Conv block which stores ICNR attribute for initialization
     layers = []
-    conv = nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2)
+    conv = PreShuffConv(ni,nf,kernel_size=kernel_size)
     if icnr:
         conv.icnr = True
 
@@ -138,9 +149,12 @@ class UpResBlock(nn.Module):
 
 class TransposeBlock(nn.Module):
     # Transpose Convolution with res connection
-    def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001):
+    def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001, kill = False):
         super(TransposeBlock, self).__init__()
+        self.ic = ic
         self.oc = oc
+        if kill:
+            self.kill = True
         if padding is None:
             padding = int(kernel_size // 2 // stride)
 
@@ -228,10 +242,7 @@ class Generator(nn.Module):
 
         for a in range(layers):
             print ('up_block')
-            operations += [TransposeBlock(ic=int(min(max_filts, filt_count * 2)), oc=int(min(max_filts, filt_count)), kernel_size=kernel_size,
-                                          padding=1,
-                                          drop=center_drop)
-                           ]
+            operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
             #if a == 2:
             #    print('attn')
             #    att =  SelfAttention(int(min(max_filts, filt_count * 2)))
@@ -241,7 +252,7 @@ class Generator(nn.Module):
 
         operations += [
             TransposeBlock(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
-                           drop=center_drop),
+                           drop=center_drop,kill=True),
 
             TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop)
         ]
@@ -249,7 +260,7 @@ class Generator(nn.Module):
         operations.reverse()
 
         operations += [nn.ReflectionPad2d(3),
-                       nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1)]
+                       spectral_norm(nn.Conv2d(in_channels=min_filts, out_channels=channels, kernel_size=7, padding=0, stride=1))]
 
         self.model = nn.Sequential(*operations)
         #self.att = att
