@@ -50,7 +50,7 @@ def superswitch(m):
 
 def deconvswitch(m):
     for name, c in m.named_children():
-        m.add_module(name, superswitch(c))
+        m.add_module(name, deconvswitch(c))
     classname = m.__class__.__name__
     if classname == 'TransposeBlock' and hasattr(m, 'kill'):
             preconv = PreShuffConv(m.ic, m.oc,kernel_size=3)  # ,init=True,init_conv=m)
