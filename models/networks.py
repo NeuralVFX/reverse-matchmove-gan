@@ -264,9 +264,10 @@ class Generator(nn.Module):
         operations += [
             TransposeBlock(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
                            drop=center_drop,kill=True),
-            TransposeBlock(ic=filts, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True),
             TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
         ]
+        self.tblock = TransposeBlock(ic=filts, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
+
 
         operations.reverse()
 
@@ -275,10 +276,10 @@ class Generator(nn.Module):
 
         self.model = nn.Sequential(*operations)
         #self.att = att
-    #def fix_net(self):
-    #    fix = list(self.model.children())[:5] + [self.att] + list(self.model.children())[5:]
-    #    print (fix)
-    #    self.model = nn.Sequential(*fix)
+    def fix_net(self):
+        fix = list(self.model.children())[:1] + [self.tblock] + list(self.model.children())[1:]
+        print (fix)
+        self.model = nn.Sequential(*fix)
     def forward(self, x):
         x = self.model(x)
         return F.tanh(x)
