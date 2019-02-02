@@ -19,10 +19,14 @@ def weight_transfer(conv, preconv):
 
 class PreShuffConv(nn.Module):
     # Convolution which is compatible with pixel shuffle and spectral norm
-    def __init__(self, ni, nf, kernel_size=3):  # ,init = False, init_conv =None):
+    def __init__(self, ni, nf, kernel_size=3,new=False):  # ,init = False, init_conv =None):
         super(PreShuffConv, self).__init__()
+        conv_list = [nn.Conv2d(ni, nf // 4, kernel_size, padding=kernel_size // 2) for i in range(4)]
+        if new:
+            for conv in conv_list:
+                conv.new = True
         self.conv_list = nn.ModuleList(
-            [spectral_norm(nn.Conv2d(ni, nf // 4, kernel_size, padding=kernel_size // 2)) for i in range(4)])
+            [spectral_norm(conv) for conv in conv_list])
 
     def forward(self, x):
         conv_list = [conv(x) for conv in self.conv_list]
@@ -53,7 +57,7 @@ def deconvswitch(m):
         m.add_module(name, deconvswitch(c))
     classname = m.__class__.__name__
     if classname == 'TransposeBlock' and hasattr(m, 'kill'):
-            preconv = UpResBlock(m.ic, m.oc,kernel_size=3)  # ,init=True,init_conv=m)
+            preconv = UpResBlock(m.ic, m.oc,kernel_size=3,new=True)  # ,init=True,init_conv=m)
             preconv.cuda()
             return preconv
     else:
@@ -99,10 +103,10 @@ class MatrixTransform(nn.Module):
         return result
 
 
-def gen_conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
+def gen_conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1,new=False):
     # Conv block which stores ICNR attribute for initialization
     layers = []
-    conv = PreShuffConv(ni,nf,kernel_size=kernel_size)
+    conv = PreShuffConv(ni,nf,kernel_size=kernel_size,new=new)
     if icnr:
         conv.icnr = True
 
@@ -127,10 +131,10 @@ def disc_con_block(ni, nf, kernel_size=3, stride=1):
 
 class UpResBlock(nn.Module):
     # Upres block which uses pixel shuffle with res connection
-    def __init__(self, ic, oc, kernel_size=3, drop=.1):
+    def __init__(self, ic, oc, kernel_size=3, drop=.1, new = False):
         super(UpResBlock, self).__init__()
         self.oc = oc
-        self.conv = gen_conv_block(ic, oc * 4, kernel_size=kernel_size, drop=drop)
+        self.conv = gen_conv_block(ic, oc * 4, kernel_size=kernel_size, drop=drop, new =new)
         self.ps = nn.PixelShuffle(2)
 
     def forward(self, x):

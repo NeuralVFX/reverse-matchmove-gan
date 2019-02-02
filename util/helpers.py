@@ -61,6 +61,17 @@ def weights_init_normal(m):
                 print(f'Init with ICNR:{classname}')
 
 
+def weights_init_new(m):
+    # Set initial state of weights
+
+    classname = m.__class__.__name__
+    if 'Conv2d' in classname and hasattr(m, 'new'):
+            nn.init.orthogonal_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.zero_()
+
+
+
 def mft(tensor):
     # Return mean float tensor #
     return torch.mean(torch.FloatTensor(tensor))

@@ -410,6 +410,7 @@ class ReverseMatchmove:
 
         #self.model_dict["G"] = helper.add_sn(self.model_dict["G"])
         self.model_dict["G"] = n.deconvswitch(self.model_dict["G"])
+        self.model_dict["G"].apply(helper.weights_init_new)
         self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
                                         lr=params['lr'],
                                         betas=(params['beta1'],
