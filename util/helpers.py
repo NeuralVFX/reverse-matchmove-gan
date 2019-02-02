@@ -76,7 +76,7 @@ def weights_init_icnr(m):
 
     classname = m.__class__.__name__
     if 'PreShuffConv' in classname and hasattr(m, 'new'):
-            m.icrn()
+            m.icnr()
             print ('new icnr init')
 
 
