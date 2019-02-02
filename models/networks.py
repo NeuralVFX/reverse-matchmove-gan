@@ -23,6 +23,8 @@ class PreShuffConv(nn.Module):
         super(PreShuffConv, self).__init__()
         conv_list = [nn.Conv2d(ni, nf // 4, kernel_size, padding=kernel_size // 2) for i in range(4)]
         if new:
+            self.new = True
+        if new:
             for conv in conv_list:
                 conv.new = True
         self.conv_list = nn.ModuleList(
@@ -34,6 +36,11 @@ class PreShuffConv(nn.Module):
                                    conv_list[0].shape[3]
         return torch.stack(conv_list, dim=2).view(bs, filts, height, width)
 
+    def icnr(self):
+        for i in range(len(self.conv_list)):
+            print ('preshuff icnr')
+            self.conv_list[i].weight.data.copy_(self.conv_list[0].weight.data)
+            self.conv_list[i].bias.data.copy_(self.conv_list[0].bias.data)
 
 def superswitch(m):
     for name, c in m.named_children():
@@ -257,8 +264,8 @@ class Generator(nn.Module):
         operations += [
             TransposeBlock(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
                            drop=center_drop,kill=True),
-
-            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop)
+            TransposeBlock(ic=filts, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True),
+            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
         ]
 
         operations.reverse()

@@ -71,6 +71,15 @@ def weights_init_new(m):
             if m.bias is not None:
                 m.bias.data.zero_()
 
+def weights_init_icnr(m):
+    # Set initial state of weights
+
+    classname = m.__class__.__name__
+    if 'PreShuffConv' in classname and hasattr(m, 'new'):
+            m.icrn()
+            print ('new icnr init')
+
+
 
 
 def mft(tensor):
