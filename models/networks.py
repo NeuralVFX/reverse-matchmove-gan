@@ -82,7 +82,7 @@ class UpResBlock(nn.Module):
 
         x = self.conv(x)
         x = self.ps(x)
-        # resize input with interpolations and add as res connection
+        # resize input with interpolation and add as res connection
         upres_x = nn.functional.interpolate(unsqueeze_x,
                                             size=[self.oc, x.shape[2], x.shape[3]],
                                             mode='trilinear',
@@ -113,7 +113,7 @@ class TransposeBlock(nn.Module):
         # run block
         x = self.operations(x)
 
-        # resize input with interpolations and add as res connection
+        # resize input with interpolation and add as res connection
         res_x = nn.functional.interpolate(unsqueeze_x,
                                           size=[self.oc, x.shape[2], x.shape[3]],
                                           mode='trilinear',
@@ -122,7 +122,7 @@ class TransposeBlock(nn.Module):
 
 
 class DownRes(nn.Module):
-    # Add Layer of Spatia Mapping
+    # Stride 2 Specral conv block with res connection
     def __init__(self, ic, oc, kernel_size=3):
         super(DownRes, self).__init__()
         self.kernel_size = kernel_size
@@ -136,7 +136,7 @@ class DownRes(nn.Module):
         # run bock
         x = self.conv(x)
         
-        # resize input with interpolations and add as res connection
+        # resize input with interpolation and add as res connection
         upres_x = nn.functional.interpolate(unsqueeze_x,
                                             size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
                                             align_corners=True)[0]
