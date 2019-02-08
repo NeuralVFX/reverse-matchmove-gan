@@ -105,7 +105,7 @@ class ReverseMatchmove:
                                            drop=params['drop'],
                                            center_drop=params['center_drop'])
 
-        self.model_dict['D'] = n.Discriminator()  # n.make_vgg(patch = True, use_grad=True)
+        self.model_dict['D'] = n.Discriminator()
 
         self.vgg = n.make_vgg()
         self.vgg.cuda()
@@ -318,8 +318,7 @@ class ReverseMatchmove:
         # discriminate real samples
         d_result_real = self.model_dict["D"](real)
 
-        # add up disc a loss and step
-
+        # add up disc loss and step
         self.loss_batch_dict['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()(1.0 + d_result_fake).mean()
         self.loss_batch_dict['D_Loss'].backward()
         self.opt_dict["D"].step()
@@ -330,7 +329,7 @@ class ReverseMatchmove:
         # discriminate real samples
         d_result_real = self.model_dict["D"](real)
 
-        # add up disc a loss and step
+        # add up disc loss
         self.loss_batch_dict_test['D_Loss'] = nn.ReLU()(1.0 - d_result_real).mean() + nn.ReLU()(
             1.0 + d_result_fake).mean()
 
