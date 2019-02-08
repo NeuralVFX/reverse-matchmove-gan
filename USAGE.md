@@ -47,7 +47,7 @@ python train.py --dataset chiang_mai_hi --train_epoch 500 --save_root chiang_mai
 --lr, default=2e-4, type=float                                 # Learning rate
 --lr_drop_start, default=50, type=int                          # Epoch on which the learning rate will begin to drop
 --lr_drop_every, default=50, type=int                          # How many epochs between every learning rate drop, learning rate will cut in half each time
---train_gen_every default=1, type=int                          # How many times the Discriminator should train between training the Generator
+--train_gen_every default=1, type=int                          # How many times the discriminator should train between training the Generator
 --ids_test, default=[1,100], type=int                          # Ids from test set for preview images
 --ids_train, default=[0,2], type=int                           # Ids from training set for preview images
 --save_every, default=5, type=int                              # How many epochs between each model save
