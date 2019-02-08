@@ -59,8 +59,7 @@ def conv_block(ni, nf, kernel_size=3, icnr=True, drop=.1):
 
 
 def spectral_conv_block(ni, nf, kernel_size=3, stride=1):
-    # conv_block with spectral normalization
-
+    # Conv block with spectral normalization
     layers = []
     conv = spectral_norm(nn.Conv2d(ni, nf, kernel_size, padding=kernel_size // 2, stride=stride))
     relu = nn.LeakyReLU(inplace=True)
@@ -108,7 +107,7 @@ class TransposeBlock(nn.Module):
         self.operations = nn.Sequential(*operations)
 
     def forward(self, x):
-        # store input
+        # store input for res
         unsqueeze_x = x.unsqueeze(0)
 
         # run block
@@ -131,11 +130,15 @@ class DownRes(nn.Module):
         self.conv = spectral_conv_block(ic, oc, kernel_size=kernel_size, stride=2)
 
     def forward(self, x):
+        # store input for res
         unsqueeze_x = x.unsqueeze(0)
 
+        # run bock
         x = self.conv(x)
-
-        upres_x = nn.functional.interpolate(unsqueeze_x, size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
+        
+        # resize input with interpolations and add as res connection
+        upres_x = nn.functional.interpolate(unsqueeze_x,
+                                            size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
                                             align_corners=True)[0]
         x = x + (upres_x * .2)
         return x
@@ -179,11 +182,12 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    # Using reverse shuffling should reduce the repetitive shimmering patterns
+    # Specral Normalized Discriminator
     def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3):
         super(Discriminator, self).__init__()
         self.use_frac = use_frac
         operations = []
+        # frac is used to resize image in case one wouuld like to scale down before input
         if use_frac:
             self.frac = frac
 
@@ -207,7 +211,6 @@ class Discriminator(nn.Module):
         self.operations = nn.Sequential(*operations)
 
     def forward(self, x):
-        # Run operations, and return relu activations for loss function
         if self.use_frac:
             x = self.frac(x)
 
