@@ -101,7 +101,7 @@ If you happen to have an image modeling program and Maya, you can use the script
 
 - `new_cam_path_from_existing(frame_offset =<int>)`
   
-  Create new camera path which animates through the posisitons of the selected cameras
+  Create new camera path which animates through the positions of the selected cameras
   
 - `export_anim_cam_data(filename = <string>,frame_range = <int>)`
   
