@@ -263,7 +263,7 @@ class Generator(nn.Module):
         for a in range(layers):
             print ('up_block')
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop, new = True)]
-            if a == 2 and attention:
+            if a == 0 and attention:
                 print('attn')
                 #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
 
@@ -273,7 +273,7 @@ class Generator(nn.Module):
         operations += [
             TransposeBlock(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
                            drop=center_drop,kill=True),
-            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True, res = False)
+            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
         ]
         #self.tblock = TransposeBlock(ic=filts, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
 
