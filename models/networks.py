@@ -285,10 +285,10 @@ class Generator(nn.Module):
                 print('attn')
                 #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
                 operations += [SelfAttention(int(min(max_filts, filt_count * 2)),downres=True)]
-            if a == 2 and attention:
-                print('attn')
-                #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
-                operations += [SelfAttention(int(min(max_filts, filt_count * 2)),downres=False)]
+            #if a == 2 and attention:
+            #    print('attn')
+            #    #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
+            #    operations += [SelfAttention(int(min(max_filts, filt_count * 2)),downres=False)]
             filt_count = int(filt_count * 2)
 
         operations += [
