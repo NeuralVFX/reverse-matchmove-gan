@@ -226,16 +226,26 @@ class DownRes(nn.Module):
 
 
 class SelfAttention(nn.Module):
-    def __init__(self, in_channel):
+    def __init__(self, in_channel,downres=False):
         super().__init__()
+        self.downres = downres
         self.query = spectral_norm(nn.Conv1d(in_channel, in_channel // 8, 1))
         self.key = spectral_norm(nn.Conv1d(in_channel, in_channel // 8, 1))
         self.value = spectral_norm(nn.Conv1d(in_channel, in_channel, 1))
         self.gamma = nn.Parameter(torch.tensor(0.0))
 
-    def forward(self, input):
-        shape = input.shape
-        flatten = input.view(shape[0], shape[1], -1)
+    def forward(self, x_input):
+        if self.downres:
+            unsqueeze_x = x_input.unsqueeze(0)
+            x = nn.functional.interpolate(unsqueeze_x,
+                                          size=[x_input.shape[1], x_input.shape[2]//2, x_input.shape[3]//2],
+                                          mode='trilinear',
+                                           align_corners=True)[0]
+        else:
+            x = x_input
+
+        shape = x.shape
+        flatten = x.view(shape[0], shape[1], -1)
         query = self.query(flatten).permute(0, 2, 1)
         key = self.key(flatten)
         value = self.value(flatten)
@@ -243,7 +253,15 @@ class SelfAttention(nn.Module):
         attn = F.softmax(query_key, 1)
         attn = torch.bmm(value, attn)
         attn = attn.view(*shape)
-        out = self.gamma * attn + input
+
+        if self.downres:
+            unsqueeze_attn = attn.unsqueeze(0)
+            attn = nn.functional.interpolate(unsqueeze_attn,
+                                             size=[x_input.shape[1], x_input.shape[2], x_input.shape[3]],
+                                             mode='trilinear',
+                                            align_corners=True)[0]
+
+        out = self.gamma * attn + x_input
         return out
 
 ############################################################################
@@ -263,11 +281,14 @@ class Generator(nn.Module):
         for a in range(layers):
             print ('up_block')
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop, new = True)]
-            if a in [0,2] and attention:
+            if a == 0 and attention:
                 print('attn')
                 #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
-
-                operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
+                operations += [SelfAttention(int(min(max_filts, filt_count * 2)),downres=True)]
+            if a == 2 and attention:
+                print('attn')
+                #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
+                operations += [SelfAttention(int(min(max_filts, filt_count * 2)),downres=False)]
             filt_count = int(filt_count * 2)
 
         operations += [
