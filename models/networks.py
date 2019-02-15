@@ -138,7 +138,7 @@ def disc_con_block(ni, nf, kernel_size=3, stride=1):
 
 class UpResBlock(nn.Module):
     # Upres block which uses pixel shuffle with res connection
-    def __init__(self, ic, oc, kernel_size=3, drop=.1, new = False, res = False):
+    def __init__(self, ic, oc, kernel_size=3, drop=.1, new = False, res = True):
         super(UpResBlock, self).__init__()
         self.res = res
         self.oc = oc
@@ -164,7 +164,7 @@ class UpResBlock(nn.Module):
 
 class TransposeBlock(nn.Module):
     # Transpose Convolution with res connection
-    def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001, kill = False, res = False):
+    def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001, kill = False, res = True):
         super(TransposeBlock, self).__init__()
         self.ic = ic
         self.oc = oc
@@ -205,7 +205,7 @@ class TransposeBlock(nn.Module):
 
 class DownRes(nn.Module):
     # Add Layer of Spatia Mapping
-    def __init__(self, ic, oc, kernel_size=3, res = False):
+    def __init__(self, ic, oc, kernel_size=3, res = True):
         super(DownRes, self).__init__()
         self.res = res
         self.kernel_size = kernel_size
@@ -273,7 +273,7 @@ class Generator(nn.Module):
         operations += [
             TransposeBlock(ic=filts, oc=int(min(max_filts, filt_count)), kernel_size=kernel_size, padding=1,
                            drop=center_drop,kill=True),
-            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
+            TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True, res = False)
         ]
         #self.tblock = TransposeBlock(ic=filts, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
 
