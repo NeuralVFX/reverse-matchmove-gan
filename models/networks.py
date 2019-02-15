@@ -245,7 +245,7 @@ class SelfAttention(nn.Module):
 class Generator(nn.Module):
     # Generator to convert Z sized vector to image
     def __init__(self, layers=6, z_size=13, filts=1024, max_filts=512, min_filts=128, kernel_size=4, channels=3,
-                 drop=.1, center_drop=.1):
+                 drop=.1, center_drop=.1, attention=False):
         super(Generator, self).__init__()
         operations = []
 
@@ -253,12 +253,12 @@ class Generator(nn.Module):
 
         for a in range(layers):
             print ('up_block')
-            operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop)]
-            #if a == 2:
-            #    print('attn')
-            #    att =  SelfAttention(int(min(max_filts, filt_count * 2)))
+            operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop, new = True)]
+            if a == 2 and attention:
+                print('attn')
+                #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
 
-                #operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
+                operations += [SelfAttention(int(min(max_filts, filt_count * 2)))]
             filt_count = int(filt_count * 2)
 
         operations += [
@@ -266,7 +266,7 @@ class Generator(nn.Module):
                            drop=center_drop,kill=True),
             TransposeBlock(ic=z_size, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
         ]
-        self.tblock = TransposeBlock(ic=filts, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
+        #self.tblock = TransposeBlock(ic=filts, oc=filts, kernel_size=kernel_size, padding=0, stride=1, drop=center_drop,kill=True)
 
 
         operations.reverse()
@@ -276,10 +276,10 @@ class Generator(nn.Module):
 
         self.model = nn.Sequential(*operations)
         #self.att = att
-    def fix_net(self):
-        fix = list(self.model.children())[:1] + [self.tblock] + list(self.model.children())[1:]
-        print (fix)
-        self.model = nn.Sequential(*fix)
+    #def fix_net(self):
+    #    fix = list(self.model.children())[:1] + [self.tblock] + list(self.model.children())[1:]
+    #    print (fix)
+    #    self.model = nn.Sequential(*fix)
     def forward(self, x):
         x = self.model(x)
         return F.tanh(x)
@@ -287,7 +287,7 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
     # Using reverse shuffling should reduce the repetitive shimmering patterns
-    def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3):
+    def __init__(self, channels=3, filts_min=128, filts=512, use_frac=False, kernel_size=4, frac=None, layers=3, attention = False):
         super(Discriminator, self).__init__()
         self.use_frac = use_frac
         operations = []
@@ -302,8 +302,9 @@ class Discriminator(nn.Module):
 
         for a in range(layers):
             operations += [DownRes(ic=min(filt_count, filts), oc=min(filt_count * 2, filts), kernel_size=3)]
-            #if a == 0:
-            #    operations += [SelfAttention(min(filt_count * 2, filts))]
+            if a == 0 and attention:
+                print('attn')
+                operations += [SelfAttention(min(filt_count * 2, filts))]
             print(min(filt_count * 2, filts))
             filt_count = int(filt_count * 2)
 

@@ -104,9 +104,10 @@ class ReverseMatchmove:
 
         self.model_dict['G'] = n.Generator(layers=int(math.log(params["res"], 2) - 3),
                                            drop=params['drop'],
-                                           center_drop=params['center_drop'])
+                                           center_drop=params['center_drop'],
+                                           attention=params['gen_att'])
 
-        self.model_dict['D'] = n.Discriminator()  # n.make_vgg(patch = True, use_grad=True)
+        self.model_dict['D'] = n.Discriminator(attention=params['disc_att'])  # n.make_vgg(patch = True, use_grad=True)
 
         self.vgg = n.make_vgg()
         self.vgg.cuda()
@@ -144,8 +145,8 @@ class ReverseMatchmove:
         self.disc_perceptual_loss.cuda()
 
         # Setup optimizers
-        self.model_dict["G"].fix_net()
-        self.model_dict["G"] = n.deconvswitch(self.model_dict["G"])
+        #self.model_dict["G"].fix_net()
+        #self.model_dict["G"] = n.deconvswitch(self.model_dict["G"])
         self.model_dict["G"].apply(helper.weights_init_new)
         self.model_dict["G"].apply(helper.weights_init_icnr)
         self.opt_dict["G"] = optim.Adam(self.model_dict["G"].parameters(),
