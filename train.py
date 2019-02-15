@@ -45,6 +45,8 @@ parser.add_argument('--save_root', nargs='?', default='chiang_mai', type=str)
 parser.add_argument('--repo_name', nargs='?', default='dataset_repo.csv', type=str)
 parser.add_argument('--load_state', nargs='?', type=str)
 parser.add_argument('--reset', nargs='?', default=False, type=bool)
+parser.add_argument('--disc_att', nargs='?', default=False, type=bool)
+parser.add_argument('--gen_att', nargs='?', default=False, type=bool)
 parser.add_argument('--just_make_gif', nargs='?', default=False, type=bool)
 
 params = vars(parser.parse_args())
