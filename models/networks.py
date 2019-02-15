@@ -138,32 +138,37 @@ def disc_con_block(ni, nf, kernel_size=3, stride=1):
 
 class UpResBlock(nn.Module):
     # Upres block which uses pixel shuffle with res connection
-    def __init__(self, ic, oc, kernel_size=3, drop=.1, new = False):
+    def __init__(self, ic, oc, kernel_size=3, drop=.1, new = False, res = False):
         super(UpResBlock, self).__init__()
+        self.res = res
         self.oc = oc
         self.conv = gen_conv_block(ic, oc * 4, kernel_size=kernel_size, drop=drop, new =new)
         self.ps = nn.PixelShuffle(2)
 
     def forward(self, x):
         # store input for res
-        unsqueeze_x = x.unsqueeze(0)
+        if self.res:
+            unsqueeze_x = x.unsqueeze(0)
 
         x = self.conv(x)
         x = self.ps(x)
-        # resize input with interpolations and add as res connection
-        upres_x = nn.functional.interpolate(unsqueeze_x,
-                                            size=[self.oc, x.shape[2], x.shape[3]],
-                                            mode='trilinear',
-                                            align_corners=True)[0]
-        return x + (upres_x * .2)
+        if self.res:
+            # resize input with interpolations and add as res connection
+            upres_x = nn.functional.interpolate(unsqueeze_x,
+                                                size=[self.oc, x.shape[2], x.shape[3]],
+                                                mode='trilinear',
+                                                align_corners=True)[0]
+            x = x + (upres_x * .2)
+        return x
 
 
 class TransposeBlock(nn.Module):
     # Transpose Convolution with res connection
-    def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001, kill = False):
+    def __init__(self, ic=4, oc=4, kernel_size=3, padding=1, stride=2, drop=.001, kill = False, res = False):
         super(TransposeBlock, self).__init__()
         self.ic = ic
         self.oc = oc
+        self.res = res
         if kill:
             self.kill = True
         if padding is None:
@@ -184,35 +189,39 @@ class TransposeBlock(nn.Module):
 
     def forward(self, x):
         # store input
-        unsqueeze_x = x.unsqueeze(0)
+        if self.res:
+            unsqueeze_x = x.unsqueeze(0)
 
         # run block
         x = self.operations(x)
-
-        # resize input with interpolations and add as res connection
-        res_x = nn.functional.interpolate(unsqueeze_x,
-                                          size=[self.oc, x.shape[2], x.shape[3]],
-                                          mode='trilinear',
-                                          align_corners=True)[0]
-        return x + (res_x * .2)
-
+        if self.res:
+            # resize input with interpolations and add as res connection
+            res_x = nn.functional.interpolate(unsqueeze_x,
+                                              size=[self.oc, x.shape[2], x.shape[3]],
+                                              mode='trilinear',
+                                              align_corners=True)[0]
+            x = x + (res_x * .2)
+        return x
 
 class DownRes(nn.Module):
     # Add Layer of Spatia Mapping
-    def __init__(self, ic, oc, kernel_size=3):
+    def __init__(self, ic, oc, kernel_size=3, res = False):
         super(DownRes, self).__init__()
+        self.res = res
         self.kernel_size = kernel_size
         self.oc = oc
         self.conv = disc_con_block(ic, oc, kernel_size=kernel_size, stride=2)
 
     def forward(self, x):
-        unsqueeze_x = x.unsqueeze(0)
+        if self.res:
+            unsqueeze_x = x.unsqueeze(0)
 
         x = self.conv(x)
 
-        upres_x = nn.functional.interpolate(unsqueeze_x, size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
+        if self.res:
+            upres_x = nn.functional.interpolate(unsqueeze_x, size=[self.oc, x.shape[2], x.shape[3]], mode='trilinear',
                                             align_corners=True)[0]
-        x = x + (upres_x * .2)
+            x = x + (upres_x * .2)
         return x
 
 
