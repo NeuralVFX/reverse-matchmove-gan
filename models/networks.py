@@ -281,7 +281,7 @@ class DeformableAttention(nn.Module):
         res = x.shape[2]
 
         #### get search coord
-        coord = F.tanh(self.search_coord(x))*.25
+        coord = F.tanh(self.search_coord(x))*.1
         #### create UV grid
         sample_grid = torch.flip(torch.transpose(uv(res), 0, 2), (1, 2)).unsqueeze(0)
         #### create grid offset
