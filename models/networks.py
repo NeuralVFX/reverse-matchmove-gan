@@ -313,7 +313,7 @@ class Generator(nn.Module):
         for a in range(layers):
             print ('up_block')
             operations += [UpResBlock(int(min(max_filts, filt_count * 2)), int(min(max_filts, filt_count)), drop=drop, new = True)]
-            if a == 0 and attention:
+            if a < 4 and attention:
                 print('attn')
                 #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
                 operations += [DeformableAttention(int(min(max_filts, filt_count * 2)),int(min(max_filts, filt_count * 2)))]
