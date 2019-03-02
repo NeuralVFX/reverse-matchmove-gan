@@ -269,10 +269,10 @@ def uv(size,u_max = 1, u_min = -1,v_max = 1, v_min = -1, ):
     uv_grid = torch.FloatTensor([[[[u_min,u_max],[u_min,u_max]],[[v_max,v_max],[v_min,v_min]]]]).cuda()
     return nn.functional.interpolate(uv_grid,size = [size,size],mode='bilinear',align_corners=True)[0]
 
-class AttBlock(nn.Module):
+class DeformableAttention(nn.Module):
     # Add Layer of Spatia Mapping
     def __init__(self, ic, oc):
-        super(AttBlock, self).__init__()
+        super(DeformableAttention, self).__init__()
         self.search_coord = spectral_norm(nn.Conv2d(in_channels=ic, out_channels=2, kernel_size=1, stride=1))
         self.search = spectral_norm(nn.Conv2d(in_channels=ic, out_channels=oc // 2, kernel_size=1, stride=1))
         self.conv = spectral_norm(nn.Conv2d(in_channels=ic, out_channels=oc // 2, kernel_size=1, stride=1))
@@ -316,7 +316,7 @@ class Generator(nn.Module):
             if a == 0 and attention:
                 print('attn')
                 #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
-                operations += [AttBlock(int(min(max_filts, filt_count * 2)))]
+                operations += [DeformableAttention(int(min(max_filts, filt_count * 2)),int(min(max_filts, filt_count * 2)))]
             #if a == 2 and attention:
             #    print('attn')
             #    #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
