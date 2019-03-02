@@ -264,6 +264,38 @@ class SelfAttention(nn.Module):
         out = self.gamma * attn + x_input
         return out
 
+
+def uv(size,u_max = 1, u_min = -1,v_max = 1, v_min = -1, ):
+    uv_grid = torch.FloatTensor([[[[u_min,u_max],[u_min,u_max]],[[v_max,v_max],[v_min,v_min]]]]).cuda()
+    return nn.functional.interpolate(uv_grid,size = [size,size],mode='bilinear',align_corners=True)[0]
+
+class AttBlock(nn.Module):
+    # Add Layer of Spatia Mapping
+    def __init__(self, ic, oc):
+        super(AttBlock, self).__init__()
+        self.search_coord = spectral_norm(nn.Conv2d(in_channels=ic, out_channels=2, kernel_size=1, stride=1))
+        self.search = spectral_norm(nn.Conv2d(in_channels=ic, out_channels=oc // 2, kernel_size=1, stride=1))
+        self.conv = spectral_norm(nn.Conv2d(in_channels=ic, out_channels=oc // 2, kernel_size=1, stride=1))
+
+    def forward(self, x):
+        res = x.shape[2]
+
+        #### get search coord
+        coord = self.search_coord(x)
+        #### create UV grid
+        sample_grid = torch.flip(torch.transpose(uv(res), 0, 2), (1, 2)).unsqueeze(0)
+        #### create grid offset
+        grid_off = coord.permute(0, 2, 3, 1)
+        search_x = F.grid_sample(x, sample_grid + grid_off)
+
+        search = self.search(search_x)
+        conv = self.conv(x)
+
+        out_x = torch.cat([search, conv], dim=1)
+
+        return out_x + (x * .2)
+
+
 ############################################################################
 # Generator and VGG
 ############################################################################
@@ -284,7 +316,7 @@ class Generator(nn.Module):
             if a == 0 and attention:
                 print('attn')
                 #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
-                operations += [SelfAttention(int(min(max_filts, filt_count * 2)),downres=True)]
+                operations += [AttBlock(int(min(max_filts, filt_count * 2)))]
             #if a == 2 and attention:
             #    print('attn')
             #    #att =  SelfAttention(int(min(max_filts, filt_count * 2)))
